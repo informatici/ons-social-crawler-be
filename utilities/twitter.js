@@ -21,13 +21,19 @@ exports.setRules = async () => {
 
   // Add rules
   const addedRules = await twitterClient.v2.updateStreamRules({
-    add: [{ value: "(sport OR calcio) lang:it" }],
+    add: [
+      { value: "(sport) lang:it", tag: "sport" },
+      { value: "(calcio) lang:it", tag: "calcio" },
+    ],
   });
   console.log("Added rules", addedRules);
 };
 
 exports.stream = async () => {
-  const stream = twitterClient.v2.searchStream({ autoConnect: false });
+  const stream = twitterClient.v2.searchStream({
+    autoConnect: false,
+    expansions: ["author_id"],
+  });
 
   // Awaits for a tweet
   stream.on(
