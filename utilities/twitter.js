@@ -1,4 +1,5 @@
 const configs = require("../configurations/app.config.js");
+const elasticsearch = require("../utilities/elasticsearch");
 const { TwitterApi, ETwitterStreamEvent } = require("twitter-api-v2");
 
 const twitterClient = new TwitterApi(configs.twitterBearerToken);
@@ -51,7 +52,10 @@ exports.stream = async () => {
   stream.on(
     // Emitted when a Twitter payload (a tweet or not, given the endpoint).
     ETwitterStreamEvent.Data,
-    (eventData) => console.log("Twitter has sent something:", eventData)
+    (eventData) => {
+      console.log("Twitter has sent something:", eventData);
+      elasticsearch.indexTwit(eventData.data);
+    }
   );
 
   stream.on(

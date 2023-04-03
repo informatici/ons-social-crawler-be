@@ -6,6 +6,9 @@ const appNodeEnv = process.env.NODE_ENV;
 const twitterApiKey = process.env.NODE_TWITTER_API_KEY;
 const twitterApiKeySecret = process.env.NODE_TWITTER_API_KEY_SECRET;
 const twitterBearerToken = process.env.NODE_TWITTER_BEARER_TOKEN;
+const elasticsearchCloudId = process.env.NODE_ELASTICSEARCH_CLOUD_ID;
+const elasticsearchUsername = process.env.NODE_ELASTICSEARCH_USERNAME;
+const elasticsearchPassword = process.env.NODE_ELASTICSEARCH_PASSWORD;
 
 module.exports = {
   appName,
@@ -14,4 +17,7 @@ module.exports = {
   twitterApiKey,
   twitterApiKeySecret,
   twitterBearerToken,
+  elasticsearchCloudId,
+  elasticsearchUsername,
+  elasticsearchPassword,
 };
