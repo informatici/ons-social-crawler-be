@@ -23,6 +23,6 @@ CMD [ "node", "app.js" ]
 #docker build . -t isf/ons-social-crawler-be
 
 #Run node app
-#docker run -p 49160:8080 -d isf/ons-social-crawler-be
+#docker run -p 49160:8088 -d isf/ons-social-crawler-be
 
 #https://nodejs.org/en/docs/guides/nodejs-docker-webapp
