@@ -26,8 +26,13 @@ app.use((req, res, next) => {
 });
 
 //ROUTER
-app.use("/twitter", twitterRoutes);
-app.use("/checker", checkerRoutes);
+app.use("/api/twitter", twitterRoutes);
+app.use("/api/checker", checkerRoutes);
+app.use("/api/", (req, res, next) => {
+  const status = 400;
+  const message = "Nothing to see here, sorry";
+  res.status(status).json({ status: status, message: message });
+});
 app.use("/", (req, res, next) => {
   const status = 400;
   const message = "Nothing to see here, sorry";
