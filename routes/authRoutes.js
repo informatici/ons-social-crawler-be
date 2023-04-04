@@ -24,5 +24,6 @@ router.delete(
   body("uid").isString().notEmpty().escape(),
   authControllers.destroy
 );
+router.post("/verify", authControllers.verify);
 
 module.exports = router;
