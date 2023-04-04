@@ -37,3 +37,8 @@ exports.deleteUser = async (data) => {
   const user = await admin.auth().deleteUser(data.uid);
   return user;
 };
+
+exports.checkAuth = async (token) => {
+  const res = await admin.auth().verifyIdToken(token);
+  console.log(res);
+};

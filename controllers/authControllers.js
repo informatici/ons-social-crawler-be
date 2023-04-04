@@ -52,9 +52,21 @@ const destroy = async (req, res, next) => {
   }
 };
 
+const verify = async (req, res, next) => {
+  const bearer = req.headers.authorization;
+  try {
+    const token = bearer.split(" ")[1];
+    await firebase.checkAuth(token);
+    res.status(200).json({});
+  } catch (err) {
+    res.status(403).send("Unauthorized");
+  }
+};
+
 module.exports = {
   index,
   create,
   update,
   destroy,
+  verify,
 };
