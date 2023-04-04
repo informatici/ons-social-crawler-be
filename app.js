@@ -12,6 +12,7 @@ app.use(bodyParse.json());
 
 //ROUTES
 const twitterRoutes = require("./routes/twitterRoutes");
+const checkerRoutes = require("./routes/checkerRoutes");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 //ROUTER
 app.use("/twitter", twitterRoutes);
+app.use("/checker", checkerRoutes);
 app.use("/", (req, res, next) => {
   const status = 400;
   const message = "Nothing to see here, sorry";
