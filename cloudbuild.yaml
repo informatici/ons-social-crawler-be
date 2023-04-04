@@ -2,8 +2,6 @@ steps:
 - name: "gcr.io/cloud-builders/npm:node-18.12.0"
   args: ["install"]  
   id: NPM_INSTALL
-  env:
-  - 'VITE_APP_API_URL=http://127.0.0.1:8088'
 
 - name: 'gcr.io/cloud-builders/docker'
   args:

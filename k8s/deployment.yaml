@@ -34,6 +34,12 @@ spec:
            value: "8080"
          - name:  NODE_ENV
            value: DEV
+         - name: NODE_TWITTER_API_KEY
+           valueFrom:
+            secretKeyRef:
+              name: twitter-api-key
+              key: key
+              optional: false
          livenessProbe:
            httpGet:
              path: /api/checker
