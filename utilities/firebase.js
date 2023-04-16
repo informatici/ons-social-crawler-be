@@ -42,3 +42,19 @@ exports.checkAuth = async (token) => {
   const res = await admin.auth().verifyIdToken(token);
   console.log(res);
 };
+
+exports.verify = async (req, res, next) => {
+  if (req.method === "OPTIONS") {
+    next();
+    return;
+  }
+  const bearer = req.headers.authorization;
+  try {
+    const token = bearer.split(" ")[1];
+    await this.checkAuth(token);
+    console.log("Authorized");
+    next();
+  } catch (err) {
+    res.status(403).send("Unauthorized");
+  }
+};
