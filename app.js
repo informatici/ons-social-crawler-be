@@ -3,12 +3,14 @@ const express = require("express");
 const helmet = require("helmet");
 const compression = require("express-compression");
 const bodyParse = require("body-parser");
+const verify = require("./utilities/firebase.js").verify;
 
 //MIDDLEWARES
 const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(bodyParse.json());
+app.use(verify);
 
 //ROUTES
 const twitterRoutes = require("./routes/twitterRoutes");
