@@ -9,6 +9,7 @@ router.post(
   body("email").isString().isEmail().notEmpty().escape(),
   body("password").isString().notEmpty().isLength({ min: 6 }).escape(),
   body("displayName").isString().notEmpty().escape(),
+  body("userRoles").isArray().notEmpty().optional({ nullable: true }),
   authControllers.create
 );
 router.put(
@@ -17,6 +18,7 @@ router.put(
   body("email").isString().isEmail().notEmpty().escape(),
   body("password").isString().notEmpty().isLength({ min: 6 }).escape(),
   body("displayName").isString().notEmpty().escape(),
+  body("userRoles").isArray().notEmpty().optional({ nullable: true }),
   authControllers.update
 );
 router.delete(
