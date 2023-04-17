@@ -19,6 +19,9 @@ exports.postUser = async (data) => {
     displayName: data.displayName,
     disabled: false,
   });
+
+  await admin.auth().setCustomUserClaims(user.uid, { user: data.userRoles });
+
   return user;
 };
 
@@ -30,6 +33,9 @@ exports.putUser = async (data) => {
     displayName: data.displayName,
     disabled: false,
   });
+
+  await admin.auth().setCustomUserClaims(user.uid, { user: data.userRoles });
+
   return user;
 };
 
@@ -39,8 +45,7 @@ exports.deleteUser = async (data) => {
 };
 
 exports.checkAuth = async (token) => {
-  const res = await admin.auth().verifyIdToken(token);
-  console.log(res);
+  return await admin.auth().verifyIdToken(token);
 };
 
 exports.verify = async (req, res, next) => {
@@ -51,10 +56,23 @@ exports.verify = async (req, res, next) => {
   const bearer = req.headers.authorization;
   try {
     const token = bearer.split(" ")[1];
-    await this.checkAuth(token);
-    console.log("Authorized");
+    const user = await this.checkAuth(token);
+    req.body.roles = user.user ?? [];
     next();
   } catch (err) {
     res.status(403).send("Unauthorized");
   }
+};
+
+exports.isAuthorized = (allowRoles) => {
+  return (req, res, next) => {
+    const roles = req.body.roles;
+
+    if (roles.some((item) => allowRoles.includes(item))) {
+      next();
+      return;
+    }
+
+    res.status(403).send("Unauthorized");
+  };
 };
