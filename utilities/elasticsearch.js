@@ -47,6 +47,12 @@ exports.config = async () => {
 };
 
 exports.indexTwit = async (data) => {
+  data.text = data.text
+    .replace(/\B@\w*[a-zA-Z:]+\w*/g, "")
+    .replace(/(^RT)/g, "")
+    .trim();
+  console.log(data.text);
+
   await elasticsearch.index({
     index: "twits",
     document: {
