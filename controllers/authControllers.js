@@ -10,6 +10,16 @@ const index = async (req, res, next) => {
   }
 };
 
+const indexId = async (req, res, next) => {
+  try {
+    const uid = req.params.uid;
+    const user = await firebase.getUser(uid);
+    res.status(200).json(user);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const create = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -65,6 +75,7 @@ const verify = async (req, res, next) => {
 
 module.exports = {
   index,
+  indexId,
   create,
   update,
   destroy,

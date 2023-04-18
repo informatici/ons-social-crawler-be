@@ -11,6 +11,11 @@ exports.getUsers = async () => {
   return users;
 };
 
+exports.getUser = async (uid) => {
+  const user = await admin.auth().getUser(uid);
+  return user;
+};
+
 exports.postUser = async (data) => {
   const user = await admin.auth().createUser({
     email: data.email,
@@ -29,7 +34,7 @@ exports.putUser = async (data) => {
   const user = await admin.auth().updateUser(data.uid, {
     email: data.email,
     emailVerified: true,
-    password: data.password, //TODO: da ragionare con Gianpaolo
+    // password: data.password, //TODO: da ragionare con Gianpaolo
     displayName: data.displayName,
     disabled: false,
   });
