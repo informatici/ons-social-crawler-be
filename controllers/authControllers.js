@@ -56,8 +56,8 @@ const verify = async (req, res, next) => {
   const bearer = req.headers.authorization;
   try {
     const token = bearer.split(" ")[1];
-    await firebase.checkAuth(token);
-    res.status(200).json({});
+    const user = await firebase.checkAuth(token);
+    res.status(200).json(user);
   } catch (err) {
     res.status(403).send("Unauthorized");
   }
