@@ -53,7 +53,7 @@ exports.stream = async () => {
     // Emitted when a Twitter payload (a tweet or not, given the endpoint).
     ETwitterStreamEvent.Data,
     (eventData) => {
-      console.log("Twitter has sent something:", eventData);
+      // console.log("Twitter has sent something:", eventData);
       elasticsearch.indexTwit(eventData.data);
     }
   );
