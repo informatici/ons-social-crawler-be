@@ -20,30 +20,7 @@ exports.config = async () => {
     index: "twits",
   });
   if (exists) return;
-  await elasticsearch.indices.create({
-    index: "twits",
-    // mappings: {
-    //   properties: {
-    //     field1: { type: "text" },
-    //   },
-    // },
-  });
-
-  const res1 = await elasticsearch.index({
-    index: "test",
-    document: {
-      field1: "Test 1",
-    },
-  });
-  console.log(res1);
-
-  const res2 = await elasticsearch.index({
-    index: "test",
-    document: {
-      field1: "Test 2",
-    },
-  });
-  console.log(res2);
+  await elasticsearch.indices.create({});
 };
 
 exports.indexTwit = async (data) => {
