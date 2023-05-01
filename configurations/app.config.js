@@ -9,6 +9,9 @@ const twitterBearerToken = process.env.NODE_TWITTER_BEARER_TOKEN;
 const elasticsearchCloudId = process.env.NODE_ELASTICSEARCH_CLOUD_ID;
 const elasticsearchUsername = process.env.NODE_ELASTICSEARCH_USERNAME;
 const elasticsearchPassword = process.env.NODE_ELASTICSEARCH_PASSWORD;
+const chatBotApiUrl = process.env.NODE_CHATBOT_API_URL;
+const chatBotApiUsername = process.env.NODE_CHATBOT_API_USERNAME;
+const chatBotApiPassword = process.env.NODE_CHATBOT_API_PASSWORD;
 
 module.exports = {
   appName,
@@ -20,4 +23,7 @@ module.exports = {
   elasticsearchCloudId,
   elasticsearchUsername,
   elasticsearchPassword,
+  chatBotApiUrl,
+  chatBotApiUsername,
+  chatBotApiPassword,
 };
