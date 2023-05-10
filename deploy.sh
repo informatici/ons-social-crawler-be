@@ -1,5 +1,5 @@
 #!/bin/bash
-TAG=dev-fe-`TZ=UTC date +%Y%m%d%H%M`
+TAG=dev-be-`TZ=UTC date +%Y%m%d%H%M`
 git add .
 git commit -m "TAG: $TAG"
 git push
