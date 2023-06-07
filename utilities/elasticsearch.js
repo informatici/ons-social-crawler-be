@@ -1,6 +1,7 @@
 const configs = require("../configurations/app.config.js");
 const axios = require("./axios.js");
 const { Client } = require("@elastic/elasticsearch");
+const fs = require("fs");
 const elasticsearch = new Client({
   cloud: {
     id: configs.elasticsearchCloudId,
@@ -11,19 +12,48 @@ const elasticsearch = new Client({
   },
 });
 
+// const elasticsearch = new Client({
+//   node: "https://quickstart-es-http:9200",
+//   auth: {
+//     username: "elastic",
+//     password: "YjcAus56gcKGL323N5Q07U82",
+//   },
+// });
+
+// const elasticsearch = new Client({
+//   node: "https://localhost:8080",
+//   auth: {
+//     username: "elastic",
+//     password: "bM0Lq1F7435nb5HVOER06f5h",
+//   },
+//   tls: {
+//     ca: fs.readFileSync("./http_ca.crt"),
+//     rejectUnauthorized: false,
+//   },
+// });
+
 exports.info = async () => {
   const info = await elasticsearch.info();
   return info;
 };
 
 exports.config = async () => {
-  const { body: exists } = await elasticsearch.indices.exists({
+  const existsTwits = await elasticsearch.indices.exists({
     index: "twits",
   });
-  if (exists) return;
-  await elasticsearch.indices.create({});
+  if (!existsTwits) {
+    await elasticsearch.indices.create({ index: "twits" });
+  }
+
+  const existsYoutubeVideos = await elasticsearch.indices.exists({
+    index: "youtubevideos",
+  });
+  if (!existsYoutubeVideos) {
+    await elasticsearch.indices.create({ index: "youtubevideos" });
+  }
 };
 
+// Twitter
 exports.indexTwit = async (data) => {
   try {
     data.text = data.text
@@ -58,9 +88,6 @@ exports.indexTwit = async (data) => {
         data,
       },
     });
-
-    console.log(data);
-    console.log("------------");
   } catch (e) {
     console.log("Error", e);
   }
@@ -78,7 +105,7 @@ exports.getTotalTwits = async (data) => {
   }
 };
 
-exports.getTwits = async (data) => {
+exports.getTwits = async () => {
   try {
     const twits = await elasticsearch.search({
       index: "twits",
@@ -86,6 +113,44 @@ exports.getTwits = async (data) => {
       sort: [{ "data.timestamp": { order: "desc" } }],
     });
     return twits;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// YouTube
+exports.indexYouTubeVideo = async (data) => {
+  try {
+    const video = {
+      id: data.id || "",
+      publishedAt: data?.snippet?.publishedAt || "",
+      title: data?.snippet?.title || "",
+      description: data?.snippet?.description || "",
+      tags: data?.snippet?.tags || [],
+      channelId: data?.snippet?.channelId || "",
+      channelTitle: data?.snippet?.channelTitle || "",
+      player: data?.player?.embedHtml || "",
+    };
+
+    await elasticsearch.index({
+      index: "youtubevideos",
+      document: {
+        video,
+      },
+    });
+  } catch (e) {
+    console.log("Error", e);
+  }
+};
+
+exports.getYouTubeVideos = async () => {
+  try {
+    const videos = await elasticsearch.search({
+      index: "youtubevideos",
+      size: 100,
+      sort: [{ "video.publishedAt": { order: "desc" } }],
+    });
+    return videos?.hits || [];
   } catch (err) {
     throw err;
   }
