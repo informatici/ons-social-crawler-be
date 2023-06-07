@@ -12,6 +12,8 @@ const elasticsearchPassword = process.env.NODE_ELASTICSEARCH_PASSWORD;
 const chatBotApiUrl = process.env.NODE_CHATBOT_API_URL;
 const chatBotApiUsername = process.env.NODE_CHATBOT_API_USERNAME;
 const chatBotApiPassword = process.env.NODE_CHATBOT_API_PASSWORD;
+const youtubeApiUrl = process.env.NODE_YOUTUBE_API_URL;
+const youtubeApiKey = process.env.NODE_YOUTUBE_API_KEY;
 
 module.exports = {
   appName,
@@ -26,4 +28,6 @@ module.exports = {
   chatBotApiUrl,
   chatBotApiUsername,
   chatBotApiPassword,
+  youtubeApiUrl,
+  youtubeApiKey,
 };
