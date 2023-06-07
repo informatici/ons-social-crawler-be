@@ -18,5 +18,17 @@ router.get(
     }
   }
 );
+router.get(
+  "/elasticsearch/comments",
+  isAuthorized(["Admin"]),
+  async (req, res, next) => {
+    try {
+      const comments = await elasticsearch.getYouTubeComments();
+      res.status(200).json(comments);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 module.exports = router;

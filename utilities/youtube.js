@@ -12,12 +12,26 @@ const get = (resource, slug) => {
 };
 
 exports.getVideos = async () => {
-  const response = await get(
+  const responseVideos = await get(
     "videos",
     "chart=mostPopular&part=snippet,player&regionCode=it&videoCategoryId=17&maxResults=50"
   );
-  const videos = response?.data?.items || [];
+  const videos = responseVideos?.data?.items || [];
   for (v of videos) {
     await elasticsearch.indexYouTubeVideo(v);
+
+    const videoId = v?.id || "";
+    if (videoId !== "") {
+      const responseComments = await get(
+        "commentThreads",
+        `videoId=${videoId}&part=snippet&maxResults=10`
+      );
+
+      const comments = responseComments?.data?.items || [];
+
+      for (c of comments) {
+        await elasticsearch.indexYouTubeComment(c);
+      }
+    }
   }
 };
