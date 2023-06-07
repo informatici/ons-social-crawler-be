@@ -14,6 +14,7 @@ app.use(verify);
 
 //ROUTES
 const twitterRoutes = require("./routes/twitterRoutes");
+const youTubeRoutes = require("./routes/youtubeRoutes.js");
 const authRoutes = require("./routes/authRoutes.js");
 
 //HEADERS
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 
 //ROUTER
 app.use("/twitter", twitterRoutes);
+app.use("/youtube", youTubeRoutes);
 app.use("/auth", authRoutes);
 app.use("/", (req, res, next) => {
   const status = 400;
