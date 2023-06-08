@@ -212,11 +212,17 @@ exports.indexYouTubeComment = async (data) => {
   }
 };
 
-exports.getYouTubeComments = async () => {
+exports.getYouTubeComments = async (videoId) => {
   try {
+    console.log(videoId);
     const videos = await elasticsearch.search({
       index: "youtubecomments",
       size: 100,
+      query: {
+        match: {
+          "comment.videoId": videoId,
+        },
+      },
       sort: [{ "comment.publishedAt": { order: "desc" } }],
     });
     return videos?.hits || [];
