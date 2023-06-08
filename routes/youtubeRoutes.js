@@ -1,5 +1,5 @@
 const express = require("express");
-const { body } = require("express-validator");
+const { param } = require("express-validator");
 const elasticsearch = require("../utilities/elasticsearch");
 const { isAuthorized } = require("../utilities/firebase.js");
 const youtubeControllers = require("../controllers/youtubeControllers");
@@ -19,11 +19,14 @@ router.get(
   }
 );
 router.get(
-  "/elasticsearch/comments",
+  "/elasticsearch/comments/:videoId",
+  param("videoId").notEmpty(),
   isAuthorized(["Admin"]),
   async (req, res, next) => {
     try {
-      const comments = await elasticsearch.getYouTubeComments();
+      const comments = await elasticsearch.getYouTubeComments(
+        req.params.videoId
+      );
       res.status(200).json(comments);
     } catch (err) {
       next(err);
