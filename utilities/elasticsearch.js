@@ -151,14 +151,41 @@ exports.indexYouTubeVideo = async (data) => {
   }
 };
 
-exports.getYouTubeVideos = async () => {
+exports.getYouTubeVideos = async (videoId) => {
   try {
-    const videos = await elasticsearch.search({
+    const result = {
+      video: {},
+      comments: []
+    }
+    const res = await elasticsearch.search({
       index: "youtubevideos",
-      size: 100,
-      sort: [{ "video.publishedAt": { order: "desc" } }],
+      size: 1,
+      query: {
+        match: {
+          "video.id": videoId,
+        },
+      },
     });
-    return videos?.hits || [];
+
+    const videos = res?.hits?.hits || [];
+    if (videos.length === 1) {
+      result.video = videos[0]._source.video;
+
+      const comments = await elasticsearch.search({
+        index: "youtubecomments",
+        size: 100,
+        query: {
+          match: {
+            "comment.videoId": videoId,
+          },
+        },
+        sort: [{ "comment.publishedAt": { order: "desc" } }],
+      });
+
+      result.comments = comments?.hits?.hits || [];
+    }
+
+    return result;
   } catch (err) {
     throw err;
   }
@@ -212,20 +239,14 @@ exports.indexYouTubeComment = async (data) => {
   }
 };
 
-exports.getYouTubeComments = async (videoId) => {
+exports.getYouTubeComments = async () => {
   try {
-    console.log(videoId);
-    const videos = await elasticsearch.search({
+    const comments = await elasticsearch.search({
       index: "youtubecomments",
       size: 100,
-      query: {
-        match: {
-          "comment.videoId": videoId,
-        },
-      },
       sort: [{ "comment.publishedAt": { order: "desc" } }],
     });
-    return videos?.hits || [];
+    return comments?.hits || [];
   } catch (err) {
     throw err;
   }

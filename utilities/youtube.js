@@ -24,7 +24,7 @@ exports.getVideos = async () => {
     if (videoId !== "") {
       const responseComments = await get(
         "commentThreads",
-        `videoId=${videoId}&part=snippet&maxResults=10`
+        `videoId=${videoId}&part=snippet&maxResults=20`
       );
 
       const comments = responseComments?.data?.items || [];
