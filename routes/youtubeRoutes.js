@@ -7,31 +7,56 @@ const router = express.Router();
 
 router.get("/", youtubeControllers.index);
 router.get(
-  "/elasticsearch/videos",
+  "/elasticsearch/videos/:videoId",
+  param("videoId").notEmpty(),
   isAuthorized(["Admin"]),
   async (req, res, next) => {
     try {
-      const videos = await elasticsearch.getYouTubeVideos();
+      const videos = await elasticsearch.getYouTubeVideos(req.params.videoId);
       res.status(200).json(videos);
     } catch (err) {
       next(err);
     }
   }
 );
+// router.get(
+//   "/elasticsearch/videos",
+//   isAuthorized(["Admin"]),
+//   async (req, res, next) => {
+//     try {
+//       const videos = await elasticsearch.getYouTubeVideos();
+//       res.status(200).json(videos);
+//     } catch (err) {
+//       next(err);
+//     }
+//   }
+// );
 router.get(
-  "/elasticsearch/comments/:videoId",
-  param("videoId").notEmpty(),
+  "/elasticsearch/comments",
   isAuthorized(["Admin"]),
   async (req, res, next) => {
     try {
-      const comments = await elasticsearch.getYouTubeComments(
-        req.params.videoId
-      );
+      const comments = await elasticsearch.getYouTubeComments();
       res.status(200).json(comments);
     } catch (err) {
       next(err);
     }
   }
 );
+// router.get(
+//   "/elasticsearch/comments/:videoId",
+//   param("videoId").notEmpty(),
+//   isAuthorized(["Admin"]),
+//   async (req, res, next) => {
+//     try {
+//       const comments = await elasticsearch.getYouTubeComments(
+//         req.params.videoId
+//       );
+//       res.status(200).json(comments);
+//     } catch (err) {
+//       next(err);
+//     }
+//   }
+// );
 
 module.exports = router;
