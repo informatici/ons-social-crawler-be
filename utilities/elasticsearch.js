@@ -1,9 +1,11 @@
 const configs = require("../configurations/app.config.js");
 const axios = require("./axios.js");
+const twitch = require("../utilities/twitch");
 const uuid = require("uuid");
 const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
+
 const elasticsearch = new Client({
   cloud: {
     id: configs.elasticsearchCloudId,
@@ -176,8 +178,8 @@ exports.getYouTubeVideos = async (videoId) => {
   try {
     const result = {
       video: {},
-      comments: []
-    }
+      comments: [],
+    };
     const res = await elasticsearch.search({
       index: "youtubevideos",
       size: 1,
@@ -300,13 +302,10 @@ exports.indexTwitchComment = async (data) => {
       timestamp: Date.now(),
     };
 
-    const chatBotPrediction = await axios.post(
-      "predict/hatespeechdictionary",
-      {
-        source: "twitch",
-        items: [{ id: comment.streamId, text: comment.textDisplay }],
-      }
-    );
+    const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
+      source: "twitch",
+      items: [{ id: comment.streamId, text: comment.textDisplay }],
+    });
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
 
@@ -329,5 +328,61 @@ exports.indexTwitchComment = async (data) => {
     });
   } catch (e) {
     console.log("Error", e);
+  }
+};
+
+exports.getTwitchStream = async (streamId) => {
+  try {
+    const result = {
+      stream: {},
+      video: {},
+      comments: [],
+    };
+    const res = await elasticsearch.search({
+      index: "twitchstreams",
+      size: 1,
+      query: {
+        match: {
+          "stream.id": streamId,
+        },
+      },
+    });
+
+    const streams = res?.hits?.hits || [];
+    if (streams.length === 1) {
+      result.stream = streams[0]._source.stream;
+
+      const comments = await elasticsearch.search({
+        index: "twitchcomments",
+        size: 100,
+        query: {
+          match: {
+            "comment.streamId": streamId,
+          },
+        },
+        sort: [{ "comment.publishedAt": { order: "desc" } }],
+      });
+
+      result.comments = comments?.hits?.hits || [];
+
+      result.video = await twitch.getVideo(result.stream);
+    }
+
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getTwitchComments = async () => {
+  try {
+    const comments = await elasticsearch.search({
+      index: "twitchcomments",
+      size: 100,
+      sort: [{ "comment.publishedAt": { order: "desc" } }],
+    });
+    return comments?.hits || [];
+  } catch (err) {
+    throw err;
   }
 };

@@ -38,3 +38,16 @@ exports.getStreams = async () => {
 
     return streams;
 };
+
+exports.getVideo = async (stream) => {
+    await getToken();
+    const res = await instance.get(
+        `videos?user_id=${stream.user_id}&type=archive`
+    );
+
+    const videos = res.data?.data || [];
+
+    const video = videos.find((v) => v.stream_id === stream.id);
+
+    return video || {};
+};
