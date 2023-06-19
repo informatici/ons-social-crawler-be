@@ -6,7 +6,7 @@ const token = `Basic ${Buffer.from(
 
 const instance = axios.create({
   baseURL: configs.chatBotApiUrl,
-  timeout: 1000,
+  timeout: 2000,
   headers: { Accept: "application/json", Authorization: token },
 });
 
