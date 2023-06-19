@@ -1,5 +1,7 @@
 const configs = require("../configurations/app.config.js");
 const axios = require("./axios.js");
+const uuid = require("uuid");
+const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
 const elasticsearch = new Client({
@@ -38,6 +40,7 @@ exports.info = async () => {
 };
 
 exports.config = async () => {
+  //twits
   const existsTwits = await elasticsearch.indices.exists({
     index: "twits",
   });
@@ -45,6 +48,7 @@ exports.config = async () => {
     await elasticsearch.indices.create({ index: "twits" });
   }
 
+  //youtubevideos
   const existsYoutubeVideos = await elasticsearch.indices.exists({
     index: "youtubevideos",
   });
@@ -52,11 +56,28 @@ exports.config = async () => {
     await elasticsearch.indices.create({ index: "youtubevideos" });
   }
 
+  //youtubecomments
   const existsYoutubeComments = await elasticsearch.indices.exists({
     index: "youtubecomments",
   });
   if (!existsYoutubeComments) {
     await elasticsearch.indices.create({ index: "youtubecomments" });
+  }
+
+  //twitchstreams
+  const existsTwitchStreams = await elasticsearch.indices.exists({
+    index: "twitchstreams",
+  });
+  if (!existsTwitchStreams) {
+    await elasticsearch.indices.create({ index: "twitchstreams" });
+  }
+
+  //twitchcomments
+  const existsTwitchComments = await elasticsearch.indices.exists({
+    index: "twitchcomments",
+  });
+  if (!existsTwitchComments) {
+    await elasticsearch.indices.create({ index: "twitchcomments" });
   }
 };
 
@@ -249,5 +270,64 @@ exports.getYouTubeComments = async () => {
     return comments?.hits || [];
   } catch (err) {
     throw err;
+  }
+};
+
+// Twitch
+exports.indexTwitchStream = async (stream) => {
+  try {
+    await elasticsearch.index({
+      index: "twitchstreams",
+      document: {
+        stream,
+      },
+    });
+  } catch (e) {
+    console.log("Error", e);
+  }
+};
+
+exports.indexTwitchComment = async (data) => {
+  try {
+    const comment = {
+      id: uuid.v4(),
+      publishedAt: moment.utc().toISOString(),
+      textDisplay: data?.message || "",
+      channelName: data?.channelName || "",
+      streamId: data?.streamId || "",
+      prediction: null,
+      response: null,
+      timestamp: Date.now(),
+    };
+
+    const chatBotPrediction = await axios.post(
+      "predict/hatespeechdictionary",
+      {
+        source: "twitch",
+        items: [{ id: comment.streamId, text: comment.textDisplay }],
+      }
+    );
+
+    const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
+
+    if (isHate === 1) {
+      comment.prediction = chatBotPrediction.data.response[0];
+
+      const chatBotResponse = await axios.post("chatter/mainchatter", {
+        source: "twitch",
+        text: comment.textDisplay,
+      });
+
+      comment.response = chatBotResponse.data.response;
+    }
+
+    await elasticsearch.index({
+      index: "twitchcomments",
+      document: {
+        comment,
+      },
+    });
+  } catch (e) {
+    console.log("Error", e);
   }
 };
