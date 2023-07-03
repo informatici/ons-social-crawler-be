@@ -5,7 +5,8 @@ const { isAuthorized } = require("../utilities/firebase.js");
 const twitterControllers = require("../controllers/twitterControllers");
 const router = express.Router();
 
-router.get("/", twitterControllers.index);
+router.get("/start", twitterControllers.index);
+router.get("/stop", twitterControllers.stopStream);
 router.get("/simple", twitterControllers.simple);
 router.get("/elasticsearch/info", async (req, res, next) => {
   try {
