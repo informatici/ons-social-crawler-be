@@ -6,10 +6,19 @@ const { isAuthorized } = require("../utilities/firebase.js");
 // const youtubeControllers = require("../controllers/youtubeControllers");
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
+router.get("/start", async (req, res, next) => {
   try {
     twitchBot.startBot();
     res.status(200).json({ msg: "Twitch stream is started" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/stop", async (req, res, next) => {
+  try {
+    twitchBot.stopBot();
+    res.status(200).json({ msg: "Twitch stream is stopped" });
   } catch (err) {
     next(err);
   }

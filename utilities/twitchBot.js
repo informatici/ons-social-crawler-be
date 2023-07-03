@@ -66,5 +66,6 @@ exports.startBot = async () => {
 }
 
 exports.stopBot = () => {
+    if(!client) return;
     client.disconnect()
 }
