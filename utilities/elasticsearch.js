@@ -6,23 +6,23 @@ const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
 
-const elasticsearch = new Client({
-  cloud: {
-    id: configs.elasticsearchCloudId,
-  },
-  auth: {
-    username: configs.elasticsearchUsername,
-    password: configs.elasticsearchPassword,
-  },
-});
-
 // const elasticsearch = new Client({
-//   node: "https://quickstart-es-http:9200",
+//   cloud: {
+//     id: configs.elasticsearchCloudId,
+//   },
 //   auth: {
-//     username: "elastic",
-//     password: "YjcAus56gcKGL323N5Q07U82",
+//     username: configs.elasticsearchUsername,
+//     password: configs.elasticsearchPassword,
 //   },
 // });
+
+const elasticsearch = new Client({
+  node: "https://quickstart-es-http:9200",
+  auth: {
+    username: "elastic",
+    password: "YjcAus56gcKGL323N5Q07U82",
+  },
+});
 
 // const elasticsearch = new Client({
 //   node: "https://localhost:8080",
