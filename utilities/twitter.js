@@ -1,7 +1,10 @@
 const configs = require("../configurations/app.config.js");
+const elasticsearch = require("../utilities/elasticsearch");
 const { TwitterApi, ETwitterStreamEvent } = require("twitter-api-v2");
 
 const twitterClient = new TwitterApi(configs.twitterBearerToken);
+
+let stream = null;
 
 exports.setRules = async () => {
   const rules = await twitterClient.v2.streamRules();
@@ -29,8 +32,8 @@ exports.setRules = async () => {
   console.log("Added rules", addedRules);
 };
 
-exports.stream = async () => {
-  const stream = twitterClient.v2.searchStream({
+exports.startStream = async () => {
+  stream = twitterClient.v2.searchStream({
     autoConnect: false,
     expansions: ["author_id"],
   });
@@ -51,7 +54,10 @@ exports.stream = async () => {
   stream.on(
     // Emitted when a Twitter payload (a tweet or not, given the endpoint).
     ETwitterStreamEvent.Data,
-    (eventData) => console.log("Twitter has sent something:", eventData)
+    (eventData) => {
+      // console.log("Twitter has sent something:", eventData);
+      elasticsearch.indexTwit(eventData.data);
+    }
   );
 
   stream.on(
@@ -62,3 +68,8 @@ exports.stream = async () => {
 
   await stream.connect({ autoReconnect: true, autoReconnectRetries: Infinity });
 };
+
+exports.stopStream = () => {
+  if(!stream) return;
+  stream.disconnect();
+}

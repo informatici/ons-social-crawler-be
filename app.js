@@ -3,16 +3,21 @@ const express = require("express");
 const helmet = require("helmet");
 const compression = require("express-compression");
 const bodyParse = require("body-parser");
+const verify = require("./utilities/firebase.js").verify;
 
 //MIDDLEWARES
 const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(bodyParse.json());
+app.use(verify);
 
 //ROUTES
 const twitterRoutes = require("./routes/twitterRoutes");
 const checkerRoutes = require("./routes/checkerRoutes");
+const youTubeRoutes = require("./routes/youtubeRoutes.js");
+const twitchRoutes = require("./routes/twitchRoutes.js");
+const authRoutes = require("./routes/authRoutes.js");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -26,13 +31,11 @@ app.use((req, res, next) => {
 });
 
 //ROUTER
-app.use("/api/twitter", twitterRoutes);
+app.use("/twitter", twitterRoutes);
+app.use("/youtube", youTubeRoutes);
+app.use("/twitch", twitchRoutes)
+app.use("/auth", authRoutes);
 app.use("/api/checker", checkerRoutes);
-app.use("/api/", (req, res, next) => {
-  const status = 400;
-  const message = "Nothing to see here, sorry";
-  res.status(status).json({ status: status, message: message });
-});
 app.use("/", (req, res, next) => {
   const status = 400;
   const message = "Nothing to see here, sorry";
