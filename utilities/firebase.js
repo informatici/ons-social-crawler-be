@@ -66,8 +66,8 @@ exports.checkAuth = async (token) => {
   return await admin.auth().verifyIdToken(token);
 };
 
-exports.verify = async (req, res, next) => {
-  if (req.method === "OPTIONS") {
+exports.verify = async (req, res, next) => {  
+  if (req.method === "OPTIONS" || req.originalUrl === "/api/checker") {
     next();
     return;
   }
