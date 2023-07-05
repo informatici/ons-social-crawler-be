@@ -34,12 +34,50 @@ spec:
            value: "8080"
          - name:  NODE_ENV
            value: DEV
+
          - name: NODE_TWITTER_API_KEY
            valueFrom:
             secretKeyRef:
               name: twitter-api-key
               key: key
               optional: false
+         - name: NODE_TWITTER_API_KEY_SECRET
+           valueFrom:
+            secretKeyRef:
+              name: twitter-api-key
+              key: secret
+              optional: false
+         - name: NODE_TWITTER_BEARER_TOKEN
+           valueFrom:
+            secretKeyRef:
+              name: twitter-api-key
+              key: token
+              optional: false
+
+         - name: NODE_YOUTUBE_API_URL
+           value: "https://www.googleapis.com/youtube/v3/"
+         - name: NODE_YOUTUBE_API_KEY
+           valueFrom:
+            secretKeyRef:
+              name: youtube-api-key
+              key: key
+              optional: false
+
+         - name: NODE_TWITCH_API_URL
+           value: "https://api.twitch.tv/helix/"
+         - name: NODE_TWITCH_CLIENT_ID
+           valueFrom:
+            secretKeyRef:
+              name: twitch-api-key
+              key: id
+              optional: false
+         - name: NODE_TWITCH_CLIENT_SECRET
+           valueFrom:
+            secretKeyRef:
+              name: twitch-api-key
+              key: secret
+              optional: false
+            
          livenessProbe:
            httpGet:
              path: /api/checker
