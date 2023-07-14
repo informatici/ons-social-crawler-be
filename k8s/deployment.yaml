@@ -78,6 +78,34 @@ spec:
               key: secret
               optional: false
             
+
+         - name: NODE_ELASTICSEARCH_PASSWORD
+           valueFrom:
+            secretKeyRef:
+              name: elastic-search-user-pass
+              key: password
+              optional: false
+
+         - name: NODE_ELASTICSEARCH_USERNAME
+           valueFrom:
+            secretKeyRef:
+              name: elastic-search-user-pass
+              key: username
+              optional: false
+
+         - name: NODE_ELASTICSEARCH_HOST
+           value: quickstart-es-http
+         - name: NODE_ELASTICSEARCH_PORT
+           value: "9200"
+
+         - name: NODE_ELASTICSEARCH_CA_CERT_PATH
+           value: "/usr/src/app/http_ca.crt"
+
+         volumeMounts:
+          - name: elastic-ca-cert
+            mountPath: /usr/src/app/http_ca.crt # This should be your final destination
+            subPath: http_ca.crt  # The name of the file to be placed inside /etc, the filename used here and in mountPath should be same.
+         
          livenessProbe:
            httpGet:
              path: /api/checker
@@ -89,7 +117,14 @@ spec:
              path: /api/checker
              port: 8080
            initialDelaySeconds: 3
-           periodSeconds: 3        
+           periodSeconds: 3   
+     volumes:
+     - name: elastic-ca-cert
+       configMap:
+        name: elastic-ca-cert
+        items:
+        - key: http_ca.crt
+          path: http_ca.crt
 ---
 apiVersion: v1
 kind: Service

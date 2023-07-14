@@ -7,6 +7,9 @@ const twitterApiKey = process.env.NODE_TWITTER_API_KEY;
 const twitterApiKeySecret = process.env.NODE_TWITTER_API_KEY_SECRET;
 const twitterBearerToken = process.env.NODE_TWITTER_BEARER_TOKEN;
 const elasticsearchCloudId = process.env.NODE_ELASTICSEARCH_CLOUD_ID;
+const elasticsearchHost = process.env.NODE_ELASTICSEARCH_HOST;
+const elasticsearchPort = process.env.NODE_ELASTICSEARCH_PORT;
+const elasticsearchCaCertPath = process.env.NODE_ELASTICSEARCH_CA_CERT_PATH;
 const elasticsearchUsername = process.env.NODE_ELASTICSEARCH_USERNAME;
 const elasticsearchPassword = process.env.NODE_ELASTICSEARCH_PASSWORD;
 const chatBotApiUrl = process.env.NODE_CHATBOT_API_URL;
@@ -26,6 +29,9 @@ module.exports = {
   twitterApiKeySecret,
   twitterBearerToken,
   elasticsearchCloudId,
+  elasticsearchHost,
+  elasticsearchPort,
+  elasticsearchCaCertPath,
   elasticsearchUsername,
   elasticsearchPassword,
   chatBotApiUrl,
