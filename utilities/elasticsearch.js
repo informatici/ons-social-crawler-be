@@ -6,15 +6,15 @@ const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
 
-const elasticsearch = new Client({
-  cloud: {
-    id: configs.elasticsearchCloudId,
-  },
-  auth: {
-    username: configs.elasticsearchUsername,
-    password: configs.elasticsearchPassword,
-  },
-});
+// const elasticsearch = new Client({
+//   cloud: {
+//     id: configs.elasticsearchCloudId,
+//   },
+//   auth: {
+//     username: configs.elasticsearchUsername,
+//     password: configs.elasticsearchPassword,
+//   },
+// });
 
 // const elasticsearch = new Client({
 //   node: "https://quickstart-es-http:9200",
@@ -23,6 +23,19 @@ const elasticsearch = new Client({
 //     password: "YjcAus56gcKGL323N5Q07U82",
 //   },
 // });
+
+const elasticsearch = new Client({
+  node: "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
+  auth: {
+    username: configs.elasticsearchUsername,
+    password: configs.elasticsearchPassword,
+  },
+  tls: {
+    ca: fs.readFileSync(configs.elasticsearchCaCertPath),
+    rejectUnauthorized: false,
+  },
+});
+
 
 // const elasticsearch = new Client({
 //   node: "https://localhost:8080",
