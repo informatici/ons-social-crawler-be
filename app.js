@@ -37,10 +37,10 @@ app.use((req, res, next) => {
 });
 
 //ROUTER
-app.use("/twitter", twitterRoutes);
-app.use("/youtube", youTubeRoutes);
-app.use("/twitch", twitchRoutes)
-app.use("/auth", authRoutes);
+app.use("/api/twitter", twitterRoutes);
+app.use("/api/youtube", youTubeRoutes);
+app.use("/api/twitch", twitchRoutes)
+app.use("/api/auth", authRoutes);
 app.use("/api/checker", checkerRoutes);
 app.use("/", (req, res, next) => {
   const status = 400;
