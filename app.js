@@ -4,9 +4,15 @@ const helmet = require("helmet");
 const compression = require("express-compression");
 const bodyParse = require("body-parser");
 const verify = require("./utilities/firebase.js").verify;
+var morgan = require('morgan')
+
 
 //MIDDLEWARES
 const app = express();
+
+//ADDED FOR LOGGING
+app.use(morgan('combined'))
+
 app.use(helmet());
 app.use(compression());
 app.use(bodyParse.json());
