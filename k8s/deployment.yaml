@@ -121,7 +121,7 @@ spec:
      volumes:
      - name: elastic-ca-cert
        configMap:
-        name: elastic-ca-cert
+        name: elastic-search-ca-crt
         items:
         - key: http_ca.crt
           path: http_ca.crt
