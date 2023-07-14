@@ -1,142 +1,156 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: ons2-be
+  name: ons2-be
 spec:
- strategy:
-   rollingUpdate:
-     maxSurge: 1
-     maxUnavailable: 0
-   type: RollingUpdate
- replicas: 2
- selector:
-   matchLabels:
-     app: ons2-be
- template:
-   metadata:
-     labels:
-       app: ons2-be
-   spec:
-     containers:
-       - name: ons2-be
-         image: gcr.io/ons-hatespeech-detector-2/ons2-be:latest
-         resources:
-           limits:
-             cpu: 100m
-             memory: 512M
-           requests:
-             cpu: 100m
-             memory: 512M
-         env:
-         - name: NODE_APP_NAME
-           value: ONS
-         - name: NODE_SERVER_PORT
-           value: "8080"
-         - name:  NODE_ENV
-           value: DEV
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ons2-be
+  template:
+    metadata:
+      labels:
+        app: ons2-be
+    spec:
+      containers:
+        - name: ons2-be
+          image: gcr.io/ons-hatespeech-detector-2/ons2-be:latest
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512M
+            requests:
+              cpu: 100m
+              memory: 512M
+          env:
+            - name: NODE_APP_NAME
+              value: ONS
+            - name: NODE_SERVER_PORT
+              value: "8080"
+            - name: NODE_ENV
+              value: DEV
 
-         - name: NODE_TWITTER_API_KEY
-           valueFrom:
-            secretKeyRef:
-              name: twitter-api-key
-              key: key
-              optional: false
-         - name: NODE_TWITTER_API_KEY_SECRET
-           valueFrom:
-            secretKeyRef:
-              name: twitter-api-key
-              key: secret
-              optional: false
-         - name: NODE_TWITTER_BEARER_TOKEN
-           valueFrom:
-            secretKeyRef:
-              name: twitter-api-key
-              key: token
-              optional: false
+            - name: NODE_TWITTER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-api-key
+                  key: key
+                  optional: false
+            - name: NODE_TWITTER_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-api-key
+                  key: secret
+                  optional: false
+            - name: NODE_TWITTER_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: twitter-api-key
+                  key: token
+                  optional: false
 
-         - name: NODE_YOUTUBE_API_URL
-           value: "https://www.googleapis.com/youtube/v3/"
-         - name: NODE_YOUTUBE_API_KEY
-           valueFrom:
-            secretKeyRef:
-              name: youtube-api-key
-              key: key
-              optional: false
+            - name: NODE_YOUTUBE_API_URL
+              value: "https://www.googleapis.com/youtube/v3/"
+            - name: NODE_YOUTUBE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: youtube-api-key
+                  key: key
+                  optional: false
 
-         - name: NODE_TWITCH_API_URL
-           value: "https://api.twitch.tv/helix/"
-         - name: NODE_TWITCH_CLIENT_ID
-           valueFrom:
-            secretKeyRef:
-              name: twitch-api-key
-              key: id
-              optional: false
-         - name: NODE_TWITCH_CLIENT_SECRET
-           valueFrom:
-            secretKeyRef:
-              name: twitch-api-key
-              key: secret
-              optional: false
-            
+            - name: NODE_TWITCH_API_URL
+              value: "https://api.twitch.tv/helix/"
+            - name: NODE_TWITCH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: twitch-api-key
+                  key: id
+                  optional: false
+            - name: NODE_TWITCH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twitch-api-key
+                  key: secret
+                  optional: false
 
-         - name: NODE_ELASTICSEARCH_PASSWORD
-           valueFrom:
-            secretKeyRef:
-              name: elastic-search-user-pass
-              key: password
-              optional: false
+            - name: NODE_CHATBOT_API_URL
+              value: "https://34-95-74-41.nip.io/api-hs/"
+            - name: NODE_CHATBOT_API_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ons2-be-hs-secrets
+                  key: user
+                  optional: false
+            - name: NODE_CHATBOT_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ons2-be-hs-secrets
+                  key: password
+                  optional: false
 
-         - name: NODE_ELASTICSEARCH_USERNAME
-           valueFrom:
-            secretKeyRef:
-              name: elastic-search-user-pass
-              key: username
-              optional: false
+            - name: NODE_ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-search-user-pass
+                  key: password
+                  optional: false
 
-         - name: NODE_ELASTICSEARCH_HOST
-           value: quickstart-es-http
-         - name: NODE_ELASTICSEARCH_PORT
-           value: "9200"
+            - name: NODE_ELASTICSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elastic-search-user-pass
+                  key: username
+                  optional: false
 
-         - name: NODE_ELASTICSEARCH_CA_CERT_PATH
-           value: "/usr/src/app/http_ca.crt"
+            - name: NODE_ELASTICSEARCH_HOST
+              value: quickstart-es-http
+            - name: NODE_ELASTICSEARCH_PORT
+              value: "9200"
 
-         volumeMounts:
-          - name: elastic-ca-cert
-            mountPath: /usr/src/app/http_ca.crt # This should be your final destination
-            subPath: http_ca.crt  # The name of the file to be placed inside /etc, the filename used here and in mountPath should be same.
-         
-         livenessProbe:
-           httpGet:
-             path: /api/checker
-             port: 8080
-           initialDelaySeconds: 3
-           periodSeconds: 3
-         readinessProbe:
-           httpGet:
-             path: /api/checker
-             port: 8080
-           initialDelaySeconds: 3
-           periodSeconds: 3   
-     volumes:
-     - name: elastic-ca-cert
-       configMap:
-        name: elastic-search-ca-crt
-        items:
-        - key: http_ca.crt
-          path: http_ca.crt
+            - name: NODE_ELASTICSEARCH_CA_CERT_PATH
+              value: "/usr/src/app/http_ca.crt"
+
+          volumeMounts:
+            - name: elastic-ca-cert
+              mountPath: /usr/src/app/http_ca.crt # This should be your final destination
+              subPath: http_ca.crt # The name of the file to be placed inside /etc, the filename used here and in mountPath should be same.
+
+          livenessProbe:
+            httpGet:
+              path: /api/checker
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/checker
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
+      volumes:
+        - name: elastic-ca-cert
+          configMap:
+            name: elastic-search-ca-crt
+            items:
+              - key: http_ca.crt
+                path: http_ca.crt
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: ons2-be
-  annotations:    
+  annotations:
     cloud.google.com/backend-config: '{"default": "http-hc-config"}'
 spec:
   type: NodePort
   selector:
     app: ons2-be
   ports:
-  - protocol: TCP
-    port: 8080
-    targetPort: 8080
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
