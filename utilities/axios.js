@@ -20,8 +20,6 @@ exports.post = (resource, params) => {
 
 instance.interceptors.request.use(request => {
   console.log('Axios Bot Starting Request', JSON.stringify(request))
-  console.log('Axios Bot chatBotApiUsername', configs.chatBotApiUsername)
-  console.log('Axios Bot chatBotApiPassword', JSON.stringify(configs.chatBotApiPassword))
   return request
 })
 
