@@ -24,6 +24,6 @@ instance.interceptors.request.use(request => {
 })
 
 instance.interceptors.response.use(response => {
-  console.log('Axios Bot Response', JSON.stringify(response));
+  console.log('Axios Bot Response', response);
   return response
 })
