@@ -18,12 +18,12 @@ exports.post = (resource, params) => {
   return instance.post(resource, params);
 };
 
-instance.interceptors.request.use(request => {
-  console.log('Axios Starting Request', request, configs.chatBotApiUsername, configs.chatBotApiPassword)
-  return request
-})
+// instance.interceptors.request.use(request => {
+//   console.log('Axios Starting Request', request, configs.chatBotApiUsername, configs.chatBotApiPassword)
+//   return request
+// })
 
-instance.interceptors.response.use(response => {
-  console.log('Axios Response:', response)
-  return response
-})
+// instance.interceptors.response.use(response => {
+//   console.log('Axios Response:', response)
+//   return response
+// })
