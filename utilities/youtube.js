@@ -13,7 +13,7 @@ instance.interceptors.request.use(request => {
 })
 
 instance.interceptors.response.use(response => {
-  console.log('Axios YouTube Response:', response)
+  console.log('Axios YouTube Response:', JSON.stringify(response))
   return response
 })
 
