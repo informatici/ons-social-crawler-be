@@ -8,14 +8,12 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use(request => {
-  console.log('Axios Starting Request', JSON.stringify(request));
-  console.log("Axios youtubeApiUrl", configs.youtubeApiUrl);
-  console.log("Axios youtubeApiKey", configs.youtubeApiKey);
+  console.log('Axios YouTube Starting Request', JSON.stringify(request));
   return request
 })
 
 instance.interceptors.response.use(response => {
-  console.log('Axios Response:', response)
+  console.log('Axios YouTube Response:', response)
   return response
 })
 
