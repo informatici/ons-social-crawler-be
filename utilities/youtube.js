@@ -7,6 +7,16 @@ const instance = axios.create({
   timeout: 1000,
 });
 
+instance.interceptors.request.use(request => {
+  console.log('Axios Starting Request', request, configs.youtubeApiUrl, configs.youtubeApiKey)
+  return request
+})
+
+instance.interceptors.response.use(response => {
+  console.log('Axios Response:', response)
+  return response
+})
+
 const get = (resource, slug) => {
   return instance.get(`${resource}?key=${configs.youtubeApiKey}&${slug}`);
 };
