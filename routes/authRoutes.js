@@ -1,12 +1,14 @@
 const express = require("express");
 const { param, body } = require("express-validator");
+const { isAuthorized } = require("../utilities/firebase.js");
 const authControllers = require("../controllers/authControllers");
 const router = express.Router();
 
-router.get("/", authControllers.index);
-router.get("/:uid", param("uid").notEmpty(), authControllers.indexId);
+router.get("/", isAuthorized(["Admin"]), authControllers.index);
+router.get("/:uid", isAuthorized(["Admin"]), param("uid").notEmpty(), authControllers.indexId);
 router.post(
   "/",
+  isAuthorized(["Admin"]),
   body("email").isString().isEmail().notEmpty().escape(),
   body("password").isString().notEmpty().isLength({ min: 6 }).escape(),
   body("displayName").isString().notEmpty().escape(),
@@ -15,6 +17,7 @@ router.post(
 );
 router.put(
   "/",
+  isAuthorized(["Admin"]),
   body("uid").isString().notEmpty().escape(),
   body("email").isString().isEmail().notEmpty().escape(),
   // body("password").isString().notEmpty().isLength({ min: 6 }).escape(),
@@ -24,9 +27,10 @@ router.put(
 );
 router.delete(
   "/",
+  isAuthorized(["Admin"]),
   body("uid").isString().notEmpty().escape(),
   authControllers.destroy
 );
-router.post("/verify", authControllers.verify);
+router.post("/verify", isAuthorized(["Admin"]), authControllers.verify);
 
 module.exports = router;

@@ -20,7 +20,6 @@ app.use(verify);
 
 //ROUTES
 const twitterRoutes = require("./routes/twitterRoutes");
-const checkerRoutes = require("./routes/checkerRoutes");
 const youTubeRoutes = require("./routes/youtubeRoutes.js");
 const twitchRoutes = require("./routes/twitchRoutes.js");
 const authRoutes = require("./routes/authRoutes.js");
@@ -42,8 +41,15 @@ app.use("/api/twitter", twitterRoutes);
 app.use("/api/youtube", youTubeRoutes);
 app.use("/api/twitch", twitchRoutes)
 app.use("/api/auth", authRoutes);
-app.use("/api/checker", checkerRoutes);
 app.use("/api/stream", streamRoutes);
+
+app.use("/api/checker", (req, res, next) => {
+  try {
+    res.status(200).json({ msg: "ONS BE is working well!" });
+  } catch (err) {
+    next(err);
+  }
+});
 app.use("/", (req, res, next) => {
   const status = 400;
   const message = "Nothing to see here, sorry";

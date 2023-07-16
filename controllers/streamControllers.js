@@ -15,7 +15,7 @@ const startTwitter = async (req, res, next) => {
   try {
     await twitter.setRules();
     await twitter.startStream();
-    const response = { status: "Twitter stream is started" };
+    const response = { msg: "Twitter stream is started" };
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -25,7 +25,7 @@ const startTwitter = async (req, res, next) => {
 const stopTwitter = async (req, res, next) => {
   try {
     twitter.stopStream();
-    const response = { status: "Twitter stream is stopped" };
+    const response = { msg: "Twitter stream is stopped" };
     res.status(200).json(response);
   } catch (err) {
     next(err);
