@@ -1,17 +1,17 @@
 const elasticsearch = require("../utilities/elasticsearch");
 
-const videosIndexId = async (req, res, next) => {
+const streamsIndexId = async (req, res, next) => {
   try {
-    const videos = await elasticsearch.getYouTubeVideos(req.params.videoId);
-    res.status(200).json(videos);
+    const stream = await elasticsearch.getTwitchStream(req.params.streamId);
+    res.status(200).json(stream);
   } catch (err) {
     next(err);
   }
-};
+}
 
 const commentsIndex = async (req, res, next) => {
   try {
-    const comments = await elasticsearch.getYouTubeComments();
+    const comments = await elasticsearch.getTwitchComments();
     res.status(200).json(comments);
   } catch (err) {
     next(err);
@@ -19,6 +19,6 @@ const commentsIndex = async (req, res, next) => {
 }
 
 module.exports = {
-  videosIndexId,
+  streamsIndexId,
   commentsIndex,
 };

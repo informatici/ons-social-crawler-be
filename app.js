@@ -24,6 +24,7 @@ const checkerRoutes = require("./routes/checkerRoutes");
 const youTubeRoutes = require("./routes/youtubeRoutes.js");
 const twitchRoutes = require("./routes/twitchRoutes.js");
 const authRoutes = require("./routes/authRoutes.js");
+const streamRoutes = require("./routes/streamRoutes.js");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -42,6 +43,7 @@ app.use("/api/youtube", youTubeRoutes);
 app.use("/api/twitch", twitchRoutes)
 app.use("/api/auth", authRoutes);
 app.use("/api/checker", checkerRoutes);
+app.use("/api/stream", streamRoutes);
 app.use("/", (req, res, next) => {
   const status = 400;
   const message = "Nothing to see here, sorry";
