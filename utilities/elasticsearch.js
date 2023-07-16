@@ -16,14 +16,6 @@ const fs = require("fs");
 //   },
 // });
 
-// const elasticsearch = new Client({
-//   node: "https://quickstart-es-http:9200",
-//   auth: {
-//     username: "elastic",
-//     password: "YjcAus56gcKGL323N5Q07U82",
-//   },
-// });
-
 const elasticsearch = new Client({
   node: "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
   auth: {
@@ -35,19 +27,6 @@ const elasticsearch = new Client({
     rejectUnauthorized: false,
   },
 });
-
-
-// const elasticsearch = new Client({
-//   node: "https://localhost:8080",
-//   auth: {
-//     username: "elastic",
-//     password: "bM0Lq1F7435nb5HVOER06f5h",
-//   },
-//   tls: {
-//     ca: fs.readFileSync("./http_ca.crt"),
-//     rejectUnauthorized: false,
-//   },
-// });
 
 exports.info = async () => {
   const info = await elasticsearch.info();

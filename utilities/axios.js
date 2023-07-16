@@ -6,7 +6,7 @@ const token = `Basic ${Buffer.from(
 
 const instance = axios.create({
   baseURL: configs.chatBotApiUrl,
-  timeout: 2000,
+  // timeout: 2000,
   headers: { Accept: "application/json", Authorization: token },
 });
 
@@ -17,3 +17,13 @@ exports.get = (resource) => {
 exports.post = (resource, params) => {
   return instance.post(resource, params);
 };
+
+instance.interceptors.request.use(request => {
+  console.log('Axios Bot Starting Request', JSON.stringify(request))
+  return request
+})
+
+instance.interceptors.response.use(response => {
+  console.log('Axios Bot Response', response);
+  return response
+})

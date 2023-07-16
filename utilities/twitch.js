@@ -11,6 +11,17 @@ const instance = axios.create({
     },
 });
 
+instance.interceptors.request.use(request => {
+    console.log('Axios Twitch Starting Request', JSON.stringify(request));
+    return request
+})
+
+instance.interceptors.response.use(response => {
+    console.log('Axios Twitch Response:', response);
+    return response
+})
+
+
 const getToken = async () => {
     const res = await axios.post(
         "https://id.twitch.tv/oauth2/token",
