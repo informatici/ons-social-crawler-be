@@ -4,7 +4,7 @@ const axios = require("axios");
 
 const instance = axios.create({
   baseURL: "https://api.twitter.com/2/",
-  timeout: 1000,
+  // timeout: 1000,
   headers: { Authorization: `Bearer ${configs.twitterBearerToken}` },
 });
 

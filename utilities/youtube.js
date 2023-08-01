@@ -4,18 +4,18 @@ const axios = require("axios");
 
 const instance = axios.create({
   baseURL: configs.youtubeApiUrl,
-  timeout: 1000,
+  // timeout: 1000,
 });
 
-instance.interceptors.request.use(request => {
-  console.log('Axios YouTube Starting Request', JSON.stringify(request));
-  return request
-})
+instance.interceptors.request.use((request) => {
+  // console.log("Axios YouTube Starting Request", JSON.stringify(request));
+  return request;
+});
 
-instance.interceptors.response.use(response => {
-  console.log('Axios YouTube Response:', response);
-  return response
-})
+instance.interceptors.response.use((response) => {
+  // console.log("Axios YouTube Response:", response);
+  return response;
+});
 
 const get = (resource, slug) => {
   return instance.get(`${resource}?key=${configs.youtubeApiKey}&${slug}`);
