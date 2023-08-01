@@ -1,75 +1,34 @@
 const configs = require("../configurations/app.config.js");
 const elasticsearch = require("../utilities/elasticsearch");
-const { TwitterApi, ETwitterStreamEvent } = require("twitter-api-v2");
+const axios = require("axios");
 
-const twitterClient = new TwitterApi(configs.twitterBearerToken);
+const instance = axios.create({
+  baseURL: "https://api.twitter.com/2/",
+  timeout: 1000,
+  headers: { Authorization: `Bearer ${configs.twitterBearerToken}` },
+});
 
-let stream = null;
+instance.interceptors.request.use((request) => {
+  // console.log("Axios Twitter Starting Request", JSON.stringify(request));
+  return request;
+});
 
-exports.setRules = async () => {
-  const rules = await twitterClient.v2.streamRules();
+instance.interceptors.response.use((response) => {
+  // console.log("Axios Twitter Response:", response);
+  return response;
+});
 
-  // Remove rules
-  if (rules.meta.result_count > 0) {
-    let ids = [];
-    for (const r of rules.data) {
-      ids.push(r.id);
-    }
-    await twitterClient.v2.updateStreamRules({
-      delete: {
-        ids,
-      },
-    });
+const get = () => {
+  return instance.get(
+    `tweets/search/recent?max_results=100&expansions=author_id&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
+  );
+};
+
+exports.getTweets = async () => {
+  const responseTweets = await get();
+  const tweets = responseTweets?.data?.data || [];
+
+  for (t of tweets) {
+    await elasticsearch.indexTwit(t);
   }
-
-  // Add rules
-  const addedRules = await twitterClient.v2.updateStreamRules({
-    add: [
-      { value: "(sport) lang:it", tag: "sport" },
-      { value: "(calcio) lang:it", tag: "calcio" },
-    ],
-  });
-  console.log("Added rules", addedRules);
 };
-
-exports.startStream = async () => {
-  stream = twitterClient.v2.searchStream({
-    autoConnect: false,
-    expansions: ["author_id"],
-  });
-
-  // Awaits for a tweet
-  stream.on(
-    // Emitted when Node.js {response} emits a 'error' event (contains its payload).
-    ETwitterStreamEvent.ConnectionError,
-    (err) => console.log("Connection error!", err)
-  );
-
-  stream.on(
-    // Emitted when Node.js {response} is closed by remote or using .close().
-    ETwitterStreamEvent.ConnectionClosed,
-    () => console.log("Connection has been closed.")
-  );
-
-  stream.on(
-    // Emitted when a Twitter payload (a tweet or not, given the endpoint).
-    ETwitterStreamEvent.Data,
-    (eventData) => {
-      // console.log("Twitter has sent something:", eventData);
-      elasticsearch.indexTwit(eventData.data);
-    }
-  );
-
-  stream.on(
-    // Emitted when a Twitter sent a signal to maintain connection active
-    ETwitterStreamEvent.DataKeepAlive,
-    () => console.log("Twitter has a keep-alive packet.")
-  );
-
-  await stream.connect({ autoReconnect: true, autoReconnectRetries: Infinity });
-};
-
-exports.stopStream = () => {
-  if(!stream) return;
-  stream.disconnect();
-}

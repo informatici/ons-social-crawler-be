@@ -13,19 +13,8 @@ const startYouTube = async (req, res, next) => {
 
 const startTwitter = async (req, res, next) => {
   try {
-    await twitter.setRules();
-    await twitter.startStream();
+    await twitter.getTweets();
     const response = { msg: "Twitter stream is started" };
-    res.status(200).json(response);
-  } catch (err) {
-    next(err);
-  }
-};
-
-const stopTwitter = async (req, res, next) => {
-  try {
-    twitter.stopStream();
-    const response = { msg: "Twitter stream is stopped" };
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -53,7 +42,6 @@ const stopTwitch = async (req, res, next) => {
 module.exports = {
   startYouTube,
   startTwitter,
-  stopTwitter,
   startTwitch,
   stopTwitch,
 };
