@@ -26,4 +26,6 @@ router.get(
   streamControllers.stopTwitch
 );
 
+router.get("/status", isAuthorized(["Admin"]), streamControllers.getStatus);
+
 module.exports = router;

@@ -18,12 +18,12 @@ exports.post = (resource, params) => {
   return instance.post(resource, params);
 };
 
-instance.interceptors.request.use(request => {
-  console.log('Axios Bot Starting Request', JSON.stringify(request))
-  return request
-})
+instance.interceptors.request.use((request) => {
+  // console.log('Axios Bot Starting Request', JSON.stringify(request))
+  return request;
+});
 
-instance.interceptors.response.use(response => {
-  console.log('Axios Bot Response', response);
-  return response
-})
+instance.interceptors.response.use((response) => {
+  // console.log('Axios Bot Response', response);
+  return response;
+});
