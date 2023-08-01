@@ -4,14 +4,13 @@ const helmet = require("helmet");
 const compression = require("express-compression");
 const bodyParse = require("body-parser");
 const verify = require("./utilities/firebase.js").verify;
-var morgan = require('morgan')
-
+var morgan = require("morgan");
 
 //MIDDLEWARES
 const app = express();
 
 //ADDED FOR LOGGING
-app.use(morgan('combined'))
+app.use(morgan("combined"));
 
 app.use(helmet());
 app.use(compression());
@@ -24,6 +23,7 @@ const youTubeRoutes = require("./routes/youtubeRoutes.js");
 const twitchRoutes = require("./routes/twitchRoutes.js");
 const authRoutes = require("./routes/authRoutes.js");
 const streamRoutes = require("./routes/streamRoutes.js");
+const elasticsearchRoutes = require("./routes/elasticsearchRoutes.js");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -39,9 +39,10 @@ app.use((req, res, next) => {
 //ROUTER
 app.use("/api/twitter", twitterRoutes);
 app.use("/api/youtube", youTubeRoutes);
-app.use("/api/twitch", twitchRoutes)
+app.use("/api/twitch", twitchRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/stream", streamRoutes);
+app.use("/api/elasticsearch", elasticsearchRoutes);
 
 app.use("/api/checker", (req, res, next) => {
   try {
