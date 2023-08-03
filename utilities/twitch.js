@@ -59,5 +59,5 @@ exports.getVideo = async (stream) => {
 
   const video = videos.find((v) => v.stream_id === stream.id);
 
-  return video || {};
+  return video || null;
 };
