@@ -6,27 +6,27 @@ const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
 
-// const elasticsearch = new Client({
-//   cloud: {
-//     id: configs.elasticsearchCloudId,
-//   },
-//   auth: {
-//     username: configs.elasticsearchUsername,
-//     password: configs.elasticsearchPassword,
-//   },
-// });
-
 const elasticsearch = new Client({
-  node: "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
+  cloud: {
+    id: configs.elasticsearchCloudId,
+  },
   auth: {
     username: configs.elasticsearchUsername,
     password: configs.elasticsearchPassword,
   },
-  tls: {
-    ca: fs.readFileSync(configs.elasticsearchCaCertPath),
-    rejectUnauthorized: false,
-  },
 });
+
+// const elasticsearch = new Client({
+//   node: "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
+//   auth: {
+//     username: configs.elasticsearchUsername,
+//     password: configs.elasticsearchPassword,
+//   },
+//   tls: {
+//     ca: fs.readFileSync(configs.elasticsearchCaCertPath),
+//     rejectUnauthorized: false,
+//   },
+// });
 
 exports.info = async () => {
   const info = await elasticsearch.info();
@@ -326,8 +326,8 @@ exports.indexTwitchComment = async (data) => {
 exports.getTwitchStream = async (streamId) => {
   try {
     const result = {
-      stream: {},
-      video: {},
+      stream: null,
+      video: null,
       comments: [],
     };
     const res = await elasticsearch.search({
