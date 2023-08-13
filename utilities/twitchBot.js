@@ -1,9 +1,11 @@
 const tmi = require("tmi.js");
 const elasticsearch = require("../utilities/elasticsearch");
 const twitch = require("../utilities/twitch");
+const streamStatus = require("../utilities/streamStatus");
 
 let client = null;
 let channels = [];
+let countMessages = 0;
 
 const onMessageHandler = async (channel, tags, msg, self) => {
   if (self) {
@@ -22,10 +24,12 @@ const onMessageHandler = async (channel, tags, msg, self) => {
 
   await elasticsearch.indexTwitchComment(data);
 
-  console.log("channel", channel);
-  console.log("tags", tags);
-  console.log("msg", message);
-  console.log("-------------");
+  countMessages++;
+
+  if (countMessages >= streamStatus.getStreamStatus().twitchLength) {
+    this.stopBot();
+    streamStatus.setTwitchStreamStatus(false);
+  }
 };
 
 const onConnectedHandler = (addr, port) => {
@@ -33,6 +37,7 @@ const onConnectedHandler = (addr, port) => {
 };
 
 exports.startBot = async () => {
+  countMessages = 0;
   const streams = await twitch.getStreams();
 
   if (streams.length > 0) {
@@ -44,9 +49,6 @@ exports.startBot = async () => {
     });
 
     const channelNames = channels.map((c) => c.userLogin);
-
-    console.log(channels);
-    console.log(channelNames);
 
     const opts = {
       identity: {

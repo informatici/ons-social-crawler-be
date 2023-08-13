@@ -1,4 +1,5 @@
 const express = require("express");
+const { body } = require("express-validator");
 const { isAuthorized } = require("../utilities/firebase.js");
 const streamControllers = require("../controllers/streamControllers");
 const router = express.Router();
@@ -27,5 +28,16 @@ router.get(
 );
 
 router.get("/status", isAuthorized(["Admin"]), streamControllers.getStatus);
+router.put(
+  "/status",
+  isAuthorized(["Admin"]),
+  body("twitchStatus").isBoolean().notEmpty(),
+  body("twitchRecordLength").isNumeric().notEmpty(),
+  body("twitterStatus").isBoolean().notEmpty(),
+  body("twitterRecordLength").isNumeric().notEmpty(),
+  body("youTubeStatus").isBoolean().notEmpty(),
+  body("youTubeRecordLength").isNumeric().notEmpty(),
+  streamControllers.updateStatus
+);
 
 module.exports = router;
