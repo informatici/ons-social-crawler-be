@@ -7,7 +7,7 @@ const info = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
 
 const config = async (req, res, next) => {
   try {
@@ -16,9 +16,19 @@ const config = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
+
+const clean = async (req, res, next) => {
+  try {
+    await elasticsearch.clean();
+    res.status(200).json({});
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   info,
   config,
+  clean,
 };

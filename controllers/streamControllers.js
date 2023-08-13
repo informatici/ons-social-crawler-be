@@ -5,7 +5,7 @@ const twitchBot = require("../utilities/twitchBot");
 const streamStatus = require("../utilities/streamStatus");
 
 const startYouTube = async (req, res, next) => {
-  if (streamStatus.canStart()) {
+  if (streamStatus.canStart() && streamStatus.canStartYouTube()) {
     try {
       streamStatus.setYouTubeStreamStatus(true);
       await youtube.getVideos();
@@ -16,12 +16,12 @@ const startYouTube = async (req, res, next) => {
       streamStatus.setYouTubeStreamStatus(false);
     }
   } else {
-    next(new Error("A stream is already working"));
+    next(new Error("A stream can not start"));
   }
 };
 
 const startTwitter = async (req, res, next) => {
-  if (streamStatus.canStart()) {
+  if (streamStatus.canStart() && streamStatus.canStartTwitter()) {
     try {
       streamStatus.setTwitterStreamStatus(true);
       await twitter.getTweets();
@@ -32,12 +32,12 @@ const startTwitter = async (req, res, next) => {
       streamStatus.setTwitterStreamStatus(false);
     }
   } else {
-    next(new Error("A stream is already working"));
+    next(new Error("A stream can not start"));
   }
 };
 
 const startTwitch = async (req, res, next) => {
-  if (streamStatus.canStart()) {
+  if (streamStatus.canStart() && streamStatus.canStarTwitch()) {
     try {
       streamStatus.setTwitchStreamStatus(true);
       twitchBot.startBot();
@@ -47,7 +47,7 @@ const startTwitch = async (req, res, next) => {
       next(err);
     }
   } else {
-    next(new Error("A stream is already working"));
+    next(new Error("A stream can not start"));
   }
 };
 

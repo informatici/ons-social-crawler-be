@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get("/info", isAuthorized(["Admin"]), elasticsearchControllers.info);
 router.get("/config", isAuthorized(["Admin"]), elasticsearchControllers.config);
+router.get("/clean", isAuthorized(["Admin"]), elasticsearchControllers.clean);
 
 module.exports = router;
