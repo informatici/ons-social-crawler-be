@@ -1,3 +1,4 @@
+const { validationResult } = require("express-validator");
 const youtube = require("../utilities/youtube");
 const twitter = require("../utilities/twitter");
 const twitchBot = require("../utilities/twitchBot");
@@ -69,10 +70,25 @@ const getStatus = async (req, res, next) => {
   }
 };
 
+const updateStatus = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const updatedStreamStatus = streamStatus.updatedStreamStatus(req.body);
+    res.status(200).json(updatedStreamStatus);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   startYouTube,
   startTwitter,
   startTwitch,
   stopTwitch,
   getStatus,
+  updateStatus,
 };

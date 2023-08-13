@@ -35,6 +35,14 @@ exports.info = async () => {
 };
 
 exports.config = async () => {
+  //streamStatus
+  const existsStreamStatus = await elasticsearch.indices.exists({
+    index: "streamStatus",
+  });
+  if (!existsStreamStatus) {
+    await elasticsearch.indices.create({ index: "streamStatus" });
+  }
+
   //twits
   const existsTwits = await elasticsearch.indices.exists({
     index: "twits",
