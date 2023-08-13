@@ -1,3 +1,4 @@
+const configs = require("../configurations/app.config.js");
 const tmi = require("tmi.js");
 const elasticsearch = require("../utilities/elasticsearch");
 const twitch = require("../utilities/twitch");
@@ -52,8 +53,8 @@ exports.startBot = async () => {
 
     const opts = {
       identity: {
-        username: "aldavsoftware",
-        password: "oauth:zbnbw2afi6axrzqlzdlh1w0afas988",
+        username: configs.twitchOptUsername,
+        password: configs.twitchOptPassword,
       },
       channels: channelNames,
     };

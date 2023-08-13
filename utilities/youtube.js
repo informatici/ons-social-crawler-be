@@ -1,7 +1,9 @@
 const configs = require("../configurations/app.config.js");
 const elasticsearch = require("../utilities/elasticsearch");
 const axios = require("axios");
+const streamStatus = require("../utilities/streamStatus");
 
+let countComments = 0;
 const instance = axios.create({
   baseURL: configs.youtubeApiUrl,
   // timeout: 1000,
@@ -21,27 +23,46 @@ const get = (resource, slug) => {
   return instance.get(`${resource}?key=${configs.youtubeApiKey}&${slug}`);
 };
 
-exports.getVideos = async () => {
+const saveVideos = async (pageToken = "") => {
   const responseVideos = await get(
     "videos",
-    "chart=mostPopular&part=snippet,player&regionCode=it&videoCategoryId=17&maxResults=50"
+    `chart=mostPopular&part=snippet,player&regionCode=it&videoCategoryId=17&pageToken=${pageToken}`
   );
   const videos = responseVideos?.data?.items || [];
+  const nextPageToken = responseVideos?.data?.nextPageToken || "";
   for (v of videos) {
-    await elasticsearch.indexYouTubeVideo(v);
+    const defaultAudioLanguage = v?.snippet?.defaultAudioLanguage || "";
+    if (defaultAudioLanguage === "it") {
+      await elasticsearch.indexYouTubeVideo(v);
 
-    const videoId = v?.id || "";
-    if (videoId !== "") {
-      const responseComments = await get(
-        "commentThreads",
-        `videoId=${videoId}&part=snippet&maxResults=20`
-      );
+      const videoId = v?.id || "";
+      if (videoId !== "") {
+        const responseComments = await get(
+          "commentThreads",
+          `videoId=${videoId}&part=snippet&maxResults=100`
+        );
 
-      const comments = responseComments?.data?.items || [];
+        const comments = responseComments?.data?.items || [];
 
-      for (c of comments) {
-        await elasticsearch.indexYouTubeComment(c);
+        for (c of comments) {
+          countComments = await elasticsearch.indexYouTubeComment(
+            c,
+            countComments
+          );
+          if (countComments >= streamStatus.getStreamStatus().youTubeLength) {
+            return;
+          }
+        }
       }
     }
   }
+
+  if (nextPageToken) {
+    await saveVideos(nextPageToken);
+  }
+};
+
+exports.getVideos = async () => {
+  countComments = 0;
+  await saveVideos();
 };

@@ -36,12 +36,12 @@ exports.info = async () => {
 
 exports.config = async () => {
   //streamStatus
-  const existsStreamStatus = await elasticsearch.indices.exists({
-    index: "streamStatus",
-  });
-  if (!existsStreamStatus) {
-    await elasticsearch.indices.create({ index: "streamStatus" });
-  }
+  // const existsStreamStatus = await elasticsearch.indices.exists({
+  //   index: "streamStatus",
+  // });
+  // if (!existsStreamStatus) {
+  //   await elasticsearch.indices.create({ index: "streamStatus" });
+  // }
 
   //twits
   const existsTwits = await elasticsearch.indices.exists({
@@ -82,6 +82,11 @@ exports.config = async () => {
   if (!existsTwitchComments) {
     await elasticsearch.indices.create({ index: "twitchcomments" });
   }
+};
+
+exports.clean = async () => {
+  await elasticsearch.indices.delete({ index: "youtubevideos" });
+  await elasticsearch.indices.delete({ index: "youtubecomments" });
 };
 
 // Twitter
@@ -164,6 +169,26 @@ exports.indexYouTubeVideo = async (data) => {
       timestamp: Date.now(),
     };
 
+    const checkVideo = await elasticsearch.search({
+      index: "youtubevideos",
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                "video.id": video.id,
+              },
+            },
+          ],
+        },
+      },
+    });
+    const checkValue = checkVideo?.hits?.total?.value || 0;
+
+    if (checkValue > 0) {
+      return;
+    }
+
     await elasticsearch.index({
       index: "youtubevideos",
       document: {
@@ -215,7 +240,7 @@ exports.getYouTubeVideos = async (videoId) => {
   }
 };
 
-exports.indexYouTubeComment = async (data) => {
+exports.indexYouTubeComment = async (data, countComments) => {
   try {
     const isPublic = data?.snippet?.isPublic || false;
 
@@ -229,6 +254,27 @@ exports.indexYouTubeComment = async (data) => {
         response: null,
         timestamp: Date.now(),
       };
+
+      const checkComment = await elasticsearch.search({
+        index: "youtubecomments",
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  "comment.id": comment.id,
+                },
+              },
+            ],
+          },
+        },
+      });
+      const checkValue = checkComment?.hits?.total?.value || 0;
+      console.log("checkValue", checkValue);
+
+      if (checkValue > 0) {
+        return countComments;
+      }
 
       const chatBotPrediction = await axios.post(
         "predict/hatespeechdictionary",
@@ -257,9 +303,11 @@ exports.indexYouTubeComment = async (data) => {
           comment,
         },
       });
+
+      return countComments + 1;
     }
   } catch (e) {
-    console.log("Error", e);
+    return countComments;
   }
 };
 

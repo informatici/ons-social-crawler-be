@@ -14,6 +14,18 @@ exports.canStart = () => {
   return !streamStatus.twitter && !streamStatus.twitch && !streamStatus.youTube;
 };
 
+exports.canStartTwitter = () => {
+  return streamStatus.twitterFlag;
+};
+
+exports.canStarTwitch = () => {
+  return streamStatus.twitchFlag;
+};
+
+exports.canStartYouTube = () => {
+  return streamStatus.youTubeFlag;
+};
+
 exports.getStreamStatus = () => {
   return streamStatus;
 };

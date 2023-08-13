@@ -20,6 +20,8 @@ const youtubeApiKey = process.env.NODE_YOUTUBE_API_KEY;
 const twitchApiUrl = process.env.NODE_TWITCH_API_URL;
 const twitchClientId = process.env.NODE_TWITCH_CLIENT_ID;
 const twitchClientSecret = process.env.NODE_TWITCH_CLIENT_SECRET;
+const twitchOptUsername = process.env.NODE_TWITCH_OPT_USERNAME;
+const twitchOptPassword = process.env.NODE_TWITCH_OPT_PASSWORD;
 
 module.exports = {
   appName,
@@ -42,4 +44,6 @@ module.exports = {
   twitchApiUrl,
   twitchClientId,
   twitchClientSecret,
+  twitchOptUsername,
+  twitchOptPassword,
 };
