@@ -85,13 +85,13 @@ exports.config = async () => {
 };
 
 exports.clean = async () => {
-  await elasticsearch.indices.delete({ index: "youtubevideos" });
-  await elasticsearch.indices.delete({ index: "youtubecomments" });
+  // await elasticsearch.indices.delete({ index: "youtubevideos" });
+  // await elasticsearch.indices.delete({ index: "youtubecomments" });
 
   await elasticsearch.indices.delete({ index: "twits" });
 
-  await elasticsearch.indices.delete({ index: "twitchstreams" });
-  await elasticsearch.indices.delete({ index: "twitchcomments" });
+  // await elasticsearch.indices.delete({ index: "twitchstreams" });
+  // await elasticsearch.indices.delete({ index: "twitchcomments" });
 };
 
 // Twitter
@@ -482,13 +482,17 @@ exports.getTwitchStream = async (streamId) => {
   }
 };
 
-exports.getTwitchComments = async () => {
+exports.getTwitchComments = async (size = 10, page = 1) => {
   try {
-    const comments = await elasticsearch.search({
+    const from = (page - 1) * size;
+    const filter = {
       index: "twitchcomments",
-      size: 100,
+      size,
       sort: [{ "comment.publishedAt": { order: "desc" } }],
-    });
+      from,
+    };
+
+    const comments = await elasticsearch.search(filter);
     return comments?.hits || [];
   } catch (err) {
     throw err;
