@@ -77,6 +77,18 @@ spec:
                   name: twitch-api-key
                   key: secret
                   optional: false
+            - name: NODE_TWITCH_OPT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: twitch-api-key
+                  key: username
+                  optional: false
+            - name: NODE_TWITCH_OPT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: twitch-api-key
+                  key: password
+                  optional: false
 
             - name: NODE_CHATBOT_API_URL
               value: "https://34-95-74-41.nip.io/api-hs/"

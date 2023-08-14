@@ -5,7 +5,12 @@ const authControllers = require("../controllers/authControllers");
 const router = express.Router();
 
 router.get("/", isAuthorized(["Admin"]), authControllers.index);
-router.get("/:uid", isAuthorized(["Admin"]), param("uid").notEmpty(), authControllers.indexId);
+router.get(
+  "/:uid",
+  isAuthorized(["Admin"]),
+  param("uid").notEmpty(),
+  authControllers.indexId
+);
 router.post(
   "/",
   isAuthorized(["Admin"]),
@@ -20,7 +25,12 @@ router.put(
   isAuthorized(["Admin"]),
   body("uid").isString().notEmpty().escape(),
   body("email").isString().isEmail().notEmpty().escape(),
-  // body("password").isString().notEmpty().isLength({ min: 6 }).escape(),
+  body("password")
+    .isString()
+    .optional({ nullable: true })
+    .bail()
+    .isLength({ min: 6 })
+    .escape(),
   body("displayName").isString().notEmpty().escape(),
   body("userRoles").isArray().notEmpty().optional({ nullable: true }),
   authControllers.update
