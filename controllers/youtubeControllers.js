@@ -1,14 +1,24 @@
-const youtube = require("../utilities/youtube");
+const elasticsearch = require("../utilities/elasticsearch");
 
-const index = async (req, res, next) => {
+const videosIndexId = async (req, res, next) => {
   try {
-    await youtube.getVideos();
-    res.status(200).json({ msg: "YouTube videos had been saved" });
+    const videos = await elasticsearch.getYouTubeVideos(req.params.videoId);
+    res.status(200).json(videos);
   } catch (err) {
     next(err);
   }
 };
 
+const commentsIndex = async (req, res, next) => {
+  try {
+    const comments = await elasticsearch.getYouTubeComments();
+    res.status(200).json(comments);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
-  index,
+  videosIndexId,
+  commentsIndex,
 };

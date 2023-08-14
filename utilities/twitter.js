@@ -1,75 +1,74 @@
 const configs = require("../configurations/app.config.js");
 const elasticsearch = require("../utilities/elasticsearch");
-const { TwitterApi, ETwitterStreamEvent } = require("twitter-api-v2");
+const axios = require("axios");
+const streamStatus = require("../utilities/streamStatus");
 
-const twitterClient = new TwitterApi(configs.twitterBearerToken);
+let countTweets = 0;
+const instance = axios.create({
+  baseURL: "https://api.twitter.com/2/",
+  // timeout: 1000,
+  headers: { Authorization: `Bearer ${configs.twitterBearerToken}` },
+});
 
-let stream = null;
+instance.interceptors.request.use((request) => {
+  // console.log("Axios Twitter Starting Request", JSON.stringify(request));
+  return request;
+});
 
-exports.setRules = async () => {
-  const rules = await twitterClient.v2.streamRules();
+instance.interceptors.response.use((response) => {
+  // console.log("Axios Twitter Response:", response);
+  return response;
+});
 
-  // Remove rules
-  if (rules.meta.result_count > 0) {
-    let ids = [];
-    for (const r of rules.data) {
-      ids.push(r.id);
-    }
-    await twitterClient.v2.updateStreamRules({
-      delete: {
-        ids,
-      },
-    });
+const get = (slug) => {
+  return instance.get(`${slug}`);
+};
+
+const saveTweets = async (pageToken = "") => {
+  const lastId = await elasticsearch.getLastTwitId();
+  console.log("lastId", lastId);
+  let responseTweets = "";
+  if (!lastId) {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&query=(sport)%20lang:it%20(calcio)%20lang:it`
+    );
+  } else if (pageToken) {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it&next_token=${pageToken}`
+    );
+  } else {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it`
+    );
   }
 
-  // Add rules
-  const addedRules = await twitterClient.v2.updateStreamRules({
-    add: [
-      { value: "(sport) lang:it", tag: "sport" },
-      { value: "(calcio) lang:it", tag: "calcio" },
-    ],
-  });
-  console.log("Added rules", addedRules);
-};
+  // &query=sport%20calcio%20%23sport%20%23calcio%20lang:it
+  // &query=(sport)%20lang:it%20(calcio)%20lang:it
+  const tweets = responseTweets?.data?.data || [];
+  const nextPageToken = responseTweets?.data?.meta?.next_token || "";
+  console.log("tweets", responseTweets.data);
+  console.log("nextPageToken", nextPageToken);
 
-exports.startStream = async () => {
-  stream = twitterClient.v2.searchStream({
-    autoConnect: false,
-    expansions: ["author_id"],
-  });
+  for (t of tweets) {
+    const lang = t.lang || "";
 
-  // Awaits for a tweet
-  stream.on(
-    // Emitted when Node.js {response} emits a 'error' event (contains its payload).
-    ETwitterStreamEvent.ConnectionError,
-    (err) => console.log("Connection error!", err)
-  );
-
-  stream.on(
-    // Emitted when Node.js {response} is closed by remote or using .close().
-    ETwitterStreamEvent.ConnectionClosed,
-    () => console.log("Connection has been closed.")
-  );
-
-  stream.on(
-    // Emitted when a Twitter payload (a tweet or not, given the endpoint).
-    ETwitterStreamEvent.Data,
-    (eventData) => {
-      // console.log("Twitter has sent something:", eventData);
-      elasticsearch.indexTwit(eventData.data);
+    if (lang === "it") {
+      console.log("t", t);
+      countTweets = await elasticsearch.indexTwit(t, countTweets);
+      console.log("countTweets", countTweets);
     }
-  );
 
-  stream.on(
-    // Emitted when a Twitter sent a signal to maintain connection active
-    ETwitterStreamEvent.DataKeepAlive,
-    () => console.log("Twitter has a keep-alive packet.")
-  );
+    if (countTweets >= streamStatus.getStreamStatus().twitterLength) {
+      return;
+    }
+  }
 
-  await stream.connect({ autoReconnect: true, autoReconnectRetries: Infinity });
+  if (nextPageToken) {
+    await saveTweets(nextPageToken);
+  }
 };
 
-exports.stopStream = () => {
-  if(!stream) return;
-  stream.disconnect();
-}
+exports.getTweets = async () => {
+  countTweets = 0;
+  await saveTweets();
+};

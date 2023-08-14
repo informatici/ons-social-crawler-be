@@ -17,7 +17,8 @@ const fs = require("fs");
 // });
 
 const elasticsearch = new Client({
-  node: "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
+  node:
+    "https://" + configs.elasticsearchHost + ":" + configs.elasticsearchPort,
   auth: {
     username: configs.elasticsearchUsername,
     password: configs.elasticsearchPassword,
@@ -34,6 +35,14 @@ exports.info = async () => {
 };
 
 exports.config = async () => {
+  //streamStatus
+  // const existsStreamStatus = await elasticsearch.indices.exists({
+  //   index: "streamStatus",
+  // });
+  // if (!existsStreamStatus) {
+  //   await elasticsearch.indices.create({ index: "streamStatus" });
+  // }
+
   //twits
   const existsTwits = await elasticsearch.indices.exists({
     index: "twits",
@@ -75,8 +84,31 @@ exports.config = async () => {
   }
 };
 
+exports.clean = async () => {
+  // await elasticsearch.indices.delete({ index: "youtubevideos" });
+  // await elasticsearch.indices.delete({ index: "youtubecomments" });
+
+  await elasticsearch.indices.delete({ index: "twits" });
+
+  // await elasticsearch.indices.delete({ index: "twitchstreams" });
+  // await elasticsearch.indices.delete({ index: "twitchcomments" });
+};
+
 // Twitter
-exports.indexTwit = async (data) => {
+exports.getLastTwitId = async () => {
+  try {
+    const tweet = await elasticsearch.search({
+      index: "twits",
+      size: 1,
+      sort: [{ "data.createdAt": { order: "desc" } }],
+    });
+    return tweet?.hits?.hits[0]?._source?.data?.id || null;
+  } catch (err) {
+    return null;
+  }
+};
+
+exports.indexTwit = async (data, countTweets) => {
   try {
     data.text = data.text
       .replace(/\B@\w*[a-zA-Z:]+\w*/g, "")
@@ -85,6 +117,27 @@ exports.indexTwit = async (data) => {
     data.prediction = null;
     data.response = null;
     data.timestamp = Date.now();
+    data.createdAt = data.created_at;
+
+    const checkTweet = await elasticsearch.search({
+      index: "twits",
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                "data.id": data.id,
+              },
+            },
+          ],
+        },
+      },
+    });
+    const checkValue = checkTweet?.hits?.total?.value || 0;
+
+    if (checkValue > 0) {
+      return countTweets;
+    }
 
     const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
       source: "twitter",
@@ -110,8 +163,10 @@ exports.indexTwit = async (data) => {
         data,
       },
     });
+
+    return countTweets + 1;
   } catch (e) {
-    console.log("Error", e);
+    return countTweets;
   }
 };
 
@@ -132,7 +187,7 @@ exports.getTwits = async () => {
     const twits = await elasticsearch.search({
       index: "twits",
       size: 100,
-      sort: [{ "data.timestamp": { order: "desc" } }],
+      sort: [{ "data.createdAt": { order: "desc" } }],
     });
     return twits;
   } catch (err) {
@@ -154,6 +209,26 @@ exports.indexYouTubeVideo = async (data) => {
       player: data?.player?.embedHtml || "",
       timestamp: Date.now(),
     };
+
+    const checkVideo = await elasticsearch.search({
+      index: "youtubevideos",
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                "video.id": video.id,
+              },
+            },
+          ],
+        },
+      },
+    });
+    const checkValue = checkVideo?.hits?.total?.value || 0;
+
+    if (checkValue > 0) {
+      return;
+    }
 
     await elasticsearch.index({
       index: "youtubevideos",
@@ -206,7 +281,7 @@ exports.getYouTubeVideos = async (videoId) => {
   }
 };
 
-exports.indexYouTubeComment = async (data) => {
+exports.indexYouTubeComment = async (data, countComments) => {
   try {
     const isPublic = data?.snippet?.isPublic || false;
 
@@ -220,6 +295,26 @@ exports.indexYouTubeComment = async (data) => {
         response: null,
         timestamp: Date.now(),
       };
+
+      const checkComment = await elasticsearch.search({
+        index: "youtubecomments",
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  "comment.id": comment.id,
+                },
+              },
+            ],
+          },
+        },
+      });
+      const checkValue = checkComment?.hits?.total?.value || 0;
+
+      if (checkValue > 0) {
+        return countComments;
+      }
 
       const chatBotPrediction = await axios.post(
         "predict/hatespeechdictionary",
@@ -248,9 +343,11 @@ exports.indexYouTubeComment = async (data) => {
           comment,
         },
       });
+
+      return countComments + 1;
     }
   } catch (e) {
-    console.log("Error", e);
+    return countComments;
   }
 };
 
@@ -270,6 +367,25 @@ exports.getYouTubeComments = async () => {
 // Twitch
 exports.indexTwitchStream = async (stream) => {
   try {
+    const checkStream = await elasticsearch.search({
+      index: "twitchstreams",
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                "stream.id": stream.id,
+              },
+            },
+          ],
+        },
+      },
+    });
+    const checkValue = checkStream?.hits?.total?.value || 0;
+    if (checkValue > 0) {
+      return;
+    }
+
     await elasticsearch.index({
       index: "twitchstreams",
       document: {
@@ -326,8 +442,8 @@ exports.indexTwitchComment = async (data) => {
 exports.getTwitchStream = async (streamId) => {
   try {
     const result = {
-      stream: {},
-      video: {},
+      stream: null,
+      video: null,
       comments: [],
     };
     const res = await elasticsearch.search({
@@ -366,13 +482,17 @@ exports.getTwitchStream = async (streamId) => {
   }
 };
 
-exports.getTwitchComments = async () => {
+exports.getTwitchComments = async (size = 10, page = 1) => {
   try {
-    const comments = await elasticsearch.search({
+    const from = (page - 1) * size;
+    const filter = {
       index: "twitchcomments",
-      size: 100,
+      size,
       sort: [{ "comment.publishedAt": { order: "desc" } }],
-    });
+      from,
+    };
+
+    const comments = await elasticsearch.search(filter);
     return comments?.hits || [];
   } catch (err) {
     throw err;
