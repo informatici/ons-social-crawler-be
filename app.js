@@ -10,7 +10,7 @@ var morgan = require("morgan");
 const app = express();
 
 //ADDED FOR LOGGING
-app.use(morgan("combined"));
+// app.use(morgan("combined"));
 
 app.use(helmet());
 app.use(compression());
