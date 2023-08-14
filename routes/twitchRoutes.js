@@ -1,6 +1,6 @@
 const express = require("express");
 const elasticsearch = require("../utilities/elasticsearch");
-const { param } = require("express-validator");
+const { param, query } = require("express-validator");
 const { isAuthorized } = require("../utilities/firebase.js");
 const twitchControllers = require("../controllers/twitchControllers");
 const router = express.Router();
@@ -14,6 +14,8 @@ router.get(
 
 router.get(
   "/comments",
+  query("size").notEmpty(),
+  query("page").notEmpty(),
   isAuthorized(["Admin"]),
   twitchControllers.commentsIndex
 );

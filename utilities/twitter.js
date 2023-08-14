@@ -26,19 +26,19 @@ const get = (slug) => {
 
 const saveTweets = async (pageToken = "") => {
   const lastId = await elasticsearch.getLastTwitId();
-  console.log("lastId");
+  console.log("lastId", lastId);
   let responseTweets = "";
   if (!lastId) {
     responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&query=(sport)%20lang:it%20(calcio)%20lang:it`
     );
   } else if (pageToken) {
     responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&since_id=${lastId}&query=sport%20calcio%20%23sport%20%23calcio%20lang:it&next_token=${pageToken}`
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it&next_token=${pageToken}`
     );
   } else {
     responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&since_id=${lastId}&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it`
     );
   }
 
