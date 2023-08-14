@@ -1,54 +1,23 @@
 const express = require("express");
 const elasticsearch = require("../utilities/elasticsearch");
-const { param } = require("express-validator");
-const twitchBot = require("../utilities/twitchBot");
+const { param, query } = require("express-validator");
 const { isAuthorized } = require("../utilities/firebase.js");
-// const youtubeControllers = require("../controllers/youtubeControllers");
+const twitchControllers = require("../controllers/twitchControllers");
 const router = express.Router();
 
-router.get("/start", async (req, res, next) => {
-  try {
-    twitchBot.startBot();
-    res.status(200).json({ msg: "Twitch stream is started" });
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.get("/stop", async (req, res, next) => {
-  try {
-    twitchBot.stopBot();
-    res.status(200).json({ msg: "Twitch stream is stopped" });
-  } catch (err) {
-    next(err);
-  }
-});
-
 router.get(
-  "/elasticsearch/streams/:streamId",
+  "/streams/:streamId",
   param("streamId").notEmpty(),
   isAuthorized(["Admin"]),
-  async (req, res, next) => {
-    try {
-      const stream = await elasticsearch.getTwitchStream(req.params.streamId);
-      res.status(200).json(stream);
-    } catch (err) {
-      next(err);
-    }
-  }
+  twitchControllers.streamsIndexId
 );
 
 router.get(
-  "/elasticsearch/comments",
+  "/comments",
+  query("size").notEmpty(),
+  query("page").notEmpty(),
   isAuthorized(["Admin"]),
-  async (req, res, next) => {
-    try {
-      const comments = await elasticsearch.getTwitchComments();
-      res.status(200).json(comments);
-    } catch (err) {
-      next(err);
-    }
-  }
+  twitchControllers.commentsIndex
 );
 
 module.exports = router;
