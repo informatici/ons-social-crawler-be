@@ -1,7 +1,9 @@
 const configs = require("../configurations/app.config.js");
 const elasticsearch = require("../utilities/elasticsearch");
 const axios = require("axios");
+const streamStatus = require("../utilities/streamStatus");
 
+let countTweets = 0;
 const instance = axios.create({
   baseURL: "https://api.twitter.com/2/",
   // timeout: 1000,
@@ -18,17 +20,55 @@ instance.interceptors.response.use((response) => {
   return response;
 });
 
-const get = () => {
-  return instance.get(
-    `tweets/search/recent?max_results=100&expansions=author_id&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
-  );
+const get = (slug) => {
+  return instance.get(`${slug}`);
+};
+
+const saveTweets = async (pageToken = "") => {
+  const lastId = await elasticsearch.getLastTwitId();
+  console.log("lastId");
+  let responseTweets = "";
+  if (!lastId) {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
+    );
+  } else if (pageToken) {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&since_id=${lastId}&query=sport%20calcio%20%23sport%20%23calcio%20lang:it&next_token=${pageToken}`
+    );
+  } else {
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at&since_id=${lastId}&query=sport%20calcio%20%23sport%20%23calcio%20lang:it`
+    );
+  }
+
+  // &query=sport%20calcio%20%23sport%20%23calcio%20lang:it
+  // &query=(sport)%20lang:it%20(calcio)%20lang:it
+  const tweets = responseTweets?.data?.data || [];
+  const nextPageToken = responseTweets?.data?.meta?.next_token || "";
+  console.log("tweets", responseTweets.data);
+  console.log("nextPageToken", nextPageToken);
+
+  for (t of tweets) {
+    const lang = t.lang || "";
+
+    if (lang === "it") {
+      console.log("t", t);
+      countTweets = await elasticsearch.indexTwit(t, countTweets);
+      console.log("countTweets", countTweets);
+    }
+
+    if (countTweets >= streamStatus.getStreamStatus().twitterLength) {
+      return;
+    }
+  }
+
+  if (nextPageToken) {
+    await saveTweets(nextPageToken);
+  }
 };
 
 exports.getTweets = async () => {
-  const responseTweets = await get();
-  const tweets = responseTweets?.data?.data || [];
-
-  for (t of tweets) {
-    await elasticsearch.indexTwit(t);
-  }
+  countTweets = 0;
+  await saveTweets();
 };
