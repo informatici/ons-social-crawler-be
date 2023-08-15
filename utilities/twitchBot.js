@@ -7,6 +7,7 @@ const streamStatus = require("../utilities/streamStatus");
 let client = null;
 let channels = [];
 let countMessages = 0;
+let twitchLength = 0;
 
 const onMessageHandler = async (channel, tags, msg, self) => {
   if (self) {
@@ -27,9 +28,9 @@ const onMessageHandler = async (channel, tags, msg, self) => {
 
   countMessages++;
 
-  if (countMessages >= streamStatus.getStreamStatus().twitchLength) {
+  if (countMessages >= twitchLength) {
     this.stopBot();
-    streamStatus.setTwitchStreamStatus(false);
+    await streamStatus.setTwitchStreamStatus(false);
   }
 };
 
@@ -38,6 +39,7 @@ const onConnectedHandler = (addr, port) => {
 };
 
 exports.startBot = async () => {
+  twitchLength = await streamStatus.getStreamStatus().twitchLength;
   countMessages = 0;
   const streams = await twitch.getStreams();
 

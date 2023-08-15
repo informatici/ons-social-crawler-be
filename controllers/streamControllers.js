@@ -5,15 +5,18 @@ const twitchBot = require("../utilities/twitchBot");
 const streamStatus = require("../utilities/streamStatus");
 
 const startYouTube = async (req, res, next) => {
-  if (streamStatus.canStart() && streamStatus.canStartYouTube()) {
+  if (
+    (await streamStatus.canStart()) &&
+    (await streamStatus.canStartYouTube())
+  ) {
     try {
-      streamStatus.setYouTubeStreamStatus(true);
+      await streamStatus.setYouTubeStreamStatus(true);
       await youtube.getVideos();
       res.status(200).json({ msg: "YouTube videos had been saved" });
     } catch (err) {
       next(err);
     } finally {
-      streamStatus.setYouTubeStreamStatus(false);
+      await streamStatus.setYouTubeStreamStatus(false);
     }
   } else {
     next(new Error("A stream can not start"));
@@ -21,15 +24,18 @@ const startYouTube = async (req, res, next) => {
 };
 
 const startTwitter = async (req, res, next) => {
-  if (streamStatus.canStart() && streamStatus.canStartTwitter()) {
+  if (
+    (await streamStatus.canStart()) &&
+    (await streamStatus.canStartTwitter())
+  ) {
     try {
-      streamStatus.setTwitterStreamStatus(true);
+      await streamStatus.setTwitterStreamStatus(true);
       await twitter.getTweets();
       res.status(200).json({ msg: "Tweets  had been saved" });
     } catch (err) {
       next(err);
     } finally {
-      streamStatus.setTwitterStreamStatus(false);
+      await streamStatus.setTwitterStreamStatus(false);
     }
   } else {
     next(new Error("A stream can not start"));
@@ -37,13 +43,13 @@ const startTwitter = async (req, res, next) => {
 };
 
 const startTwitch = async (req, res, next) => {
-  if (streamStatus.canStart() && streamStatus.canStarTwitch()) {
+  if ((await streamStatus.canStart()) && (await streamStatus.canStarTwitch())) {
     try {
-      streamStatus.setTwitchStreamStatus(true);
+      await streamStatus.setTwitchStreamStatus(true);
       twitchBot.startBot();
       res.status(200).json({ msg: "Twitch stream is started" });
     } catch (err) {
-      streamStatus.setTwitchStreamStatus(false);
+      await streamStatus.setTwitchStreamStatus(false);
       next(err);
     }
   } else {
@@ -58,13 +64,13 @@ const stopTwitch = async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    streamStatus.setTwitchStreamStatus(false);
+    await streamStatus.setTwitchStreamStatus(false);
   }
 };
 
 const getStatus = async (req, res, next) => {
   try {
-    res.status(200).json(streamStatus.getStreamStatus());
+    res.status(200).json(await streamStatus.getStreamStatus());
   } catch (err) {
     next(err);
   }
@@ -77,8 +83,19 @@ const updateStatus = async (req, res, next) => {
   }
 
   try {
-    const updatedStreamStatus = streamStatus.updatedStreamStatus(req.body);
+    const updatedStreamStatus = await streamStatus.updatedStreamStatus(
+      req.body
+    );
     res.status(200).json(updatedStreamStatus);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetStatus = async (req, res, next) => {
+  try {
+    await streamStatus.resetStreamStatus();
+    res.status(200).json({});
   } catch (err) {
     next(err);
   }
@@ -91,4 +108,5 @@ module.exports = {
   stopTwitch,
   getStatus,
   updateStatus,
+  resetStatus,
 };
