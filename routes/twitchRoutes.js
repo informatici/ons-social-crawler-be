@@ -16,6 +16,10 @@ router.get(
   "/comments",
   query("size").notEmpty(),
   query("page").notEmpty(),
+  query("search"),
+  query("prediction"),
+  query("sortLabel"),
+  query("sortOrder"),
   isAuthorized(["Admin"]),
   twitchControllers.commentsIndex
 );
