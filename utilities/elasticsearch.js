@@ -497,15 +497,69 @@ exports.getTwitchStream = async (streamId) => {
   }
 };
 
-exports.getTwitchComments = async (size = 10, page = 1) => {
+exports.getTwitchComments = async (
+  size = 10,
+  page = 1,
+  search = "",
+  prediction = 0,
+  sortLabel = "publishedAt",
+  sortOrder = "desc"
+) => {
   try {
     const from = (page - 1) * size;
-    const filter = {
+    let filter = {
       index: "twitchcomments",
       size,
-      sort: [{ "comment.publishedAt": { order: "desc" } }],
+      sort: [{ [`comment.${sortLabel}`]: { order: sortOrder } }],
       from,
+      body: {
+        query: {
+          bool: {
+            must: [],
+          },
+        },
+      },
     };
+
+    if (search) {
+      filter.body = {
+        query: {
+          bool: {
+            must: [
+              {
+                wildcard: {
+                  "comment.textDisplay": {
+                    value: `*${search}*`,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      };
+    }
+
+    if (prediction == 2) {
+      filter.body.query.bool.must.push({
+        constant_score: {
+          filter: {
+            exists: {
+              field: "comment.prediction",
+            },
+          },
+        },
+      });
+    } else if (prediction == 1) {
+      filter.body.query.bool.must.push({
+        bool: {
+          must_not: {
+            exists: {
+              field: "comment.prediction",
+            },
+          },
+        },
+      });
+    }
 
     const comments = await elasticsearch.search(filter);
     return comments?.hits || [];
