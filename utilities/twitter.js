@@ -70,7 +70,10 @@ const saveTweets = async (pageToken = "") => {
 };
 
 exports.getTweets = async () => {
-  twitterLength = await streamStatus.getStreamStatus().twitterLength;
-  countTweets = 0;
-  await saveTweets();
+  const res = await streamStatus.getStreamStatus();
+  if (res.twitterLength > 0) {
+    twitterLength = res.twitterLength;
+    countTweets = 0;
+    await saveTweets();
+  }
 };

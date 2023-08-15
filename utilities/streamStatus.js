@@ -1,7 +1,6 @@
 const elasticsearch = require("../utilities/elasticsearch");
 const stremStatus = async () => {
   return await elasticsearch.getStreamStatus();
-  console.log("streamStatus", streamStatus);
 };
 
 exports.canStart = async () => {
@@ -56,7 +55,7 @@ exports.updatedStreamStatus = async (data) => {
   return streamStatus;
 };
 
-exports.resetStreamStatus = async (data) => {
+exports.resetStreamStatus = async () => {
   const streamStatus = {
     twitter: false,
     twitch: false,
