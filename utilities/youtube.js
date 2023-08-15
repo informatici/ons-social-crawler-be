@@ -4,6 +4,7 @@ const axios = require("axios");
 const streamStatus = require("../utilities/streamStatus");
 
 let countComments = 0;
+let youTubeLength = 0;
 const instance = axios.create({
   baseURL: configs.youtubeApiUrl,
   // timeout: 1000,
@@ -49,7 +50,7 @@ const saveVideos = async (pageToken = "") => {
             c,
             countComments
           );
-          if (countComments >= streamStatus.getStreamStatus().youTubeLength) {
+          if (countComments >= youTubeLength) {
             return;
           }
         }
@@ -63,6 +64,7 @@ const saveVideos = async (pageToken = "") => {
 };
 
 exports.getVideos = async () => {
+  youTubeLength = await streamStatus.getStreamStatus().youTubeLength;
   countComments = 0;
   await saveVideos();
 };
