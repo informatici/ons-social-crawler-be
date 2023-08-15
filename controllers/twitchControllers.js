@@ -16,7 +16,6 @@ const streamsIndexId = async (req, res, next) => {
 };
 
 const commentsIndex = async (req, res, next) => {
-  console.log("params", req.query);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -25,7 +24,11 @@ const commentsIndex = async (req, res, next) => {
   try {
     const comments = await elasticsearch.getTwitchComments(
       req.query.size,
-      req.query.page
+      req.query.page,
+      req.query.search,
+      req.query.prediction,
+      req.query.sortLabel || "publishedAt",
+      req.query.sortOrder || "desc"
     );
     res.status(200).json(comments);
   } catch (err) {
