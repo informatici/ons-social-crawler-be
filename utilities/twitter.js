@@ -27,7 +27,7 @@ const get = (slug) => {
 
 const saveTweets = async (pageToken = "") => {
   const lastId = await elasticsearch.getLastTwitId();
-  console.log("lastId", lastId);
+  // console.log("lastId", lastId);
   let responseTweets = "";
   if (!lastId) {
     responseTweets = await get(
@@ -47,16 +47,16 @@ const saveTweets = async (pageToken = "") => {
   // &query=(sport)%20lang:it%20(calcio)%20lang:it
   const tweets = responseTweets?.data?.data || [];
   const nextPageToken = responseTweets?.data?.meta?.next_token || "";
-  console.log("tweets", responseTweets.data);
-  console.log("nextPageToken", nextPageToken);
+  // console.log("tweets", responseTweets.data);
+  // console.log("nextPageToken", nextPageToken);
 
   for (t of tweets) {
     const lang = t.lang || "";
 
     if (lang === "it") {
-      console.log("t", t);
+      // console.log("t", t);
       countTweets = await elasticsearch.indexTwit(t, countTweets);
-      console.log("countTweets", countTweets);
+      // console.log("countTweets", countTweets);
     }
 
     if (countTweets >= twitterLength) {
