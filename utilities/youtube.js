@@ -64,7 +64,10 @@ const saveVideos = async (pageToken = "") => {
 };
 
 exports.getVideos = async () => {
-  youTubeLength = await streamStatus.getStreamStatus().youTubeLength;
-  countComments = 0;
-  await saveVideos();
+  const res = await streamStatus.getStreamStatus();
+  if (res.youTubeLength > 0) {
+    youTubeLength = res.youTubeLength;
+    countComments = 0;
+    await saveVideos();
+  }
 };

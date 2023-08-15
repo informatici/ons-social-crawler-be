@@ -39,32 +39,36 @@ const onConnectedHandler = (addr, port) => {
 };
 
 exports.startBot = async () => {
-  twitchLength = await streamStatus.getStreamStatus().twitchLength;
-  countMessages = 0;
-  const streams = await twitch.getStreams();
+  const res = await streamStatus.getStreamStatus();
 
-  if (streams.length > 0) {
-    channels = streams.map((c) => {
-      return {
-        streamId: c.id,
-        userLogin: c.user_login,
+  if (res.twitchLength > 0) {
+    twitchLength = res.twitchLength;
+    countMessages = 0;
+    const streams = await twitch.getStreams();
+
+    if (streams.length > 0) {
+      channels = streams.map((c) => {
+        return {
+          streamId: c.id,
+          userLogin: c.user_login,
+        };
+      });
+
+      const channelNames = channels.map((c) => c.userLogin);
+
+      const opts = {
+        identity: {
+          username: configs.twitchOptUsername,
+          password: configs.twitchOptPassword,
+        },
+        channels: channelNames,
       };
-    });
 
-    const channelNames = channels.map((c) => c.userLogin);
-
-    const opts = {
-      identity: {
-        username: configs.twitchOptUsername,
-        password: configs.twitchOptPassword,
-      },
-      channels: channelNames,
-    };
-
-    client = new tmi.client(opts);
-    client.on("message", onMessageHandler);
-    client.on("connected", onConnectedHandler);
-    client.connect();
+      client = new tmi.client(opts);
+      client.on("message", onMessageHandler);
+      client.on("connected", onConnectedHandler);
+      client.connect();
+    }
   }
 };
 
