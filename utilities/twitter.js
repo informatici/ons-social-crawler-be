@@ -4,6 +4,7 @@ const axios = require("axios");
 const streamStatus = require("../utilities/streamStatus");
 
 let countTweets = 0;
+let twitterLength = 0;
 const instance = axios.create({
   baseURL: "https://api.twitter.com/2/",
   // timeout: 1000,
@@ -58,7 +59,7 @@ const saveTweets = async (pageToken = "") => {
       console.log("countTweets", countTweets);
     }
 
-    if (countTweets >= streamStatus.getStreamStatus().twitterLength) {
+    if (countTweets >= twitterLength) {
       return;
     }
   }
@@ -69,6 +70,7 @@ const saveTweets = async (pageToken = "") => {
 };
 
 exports.getTweets = async () => {
+  twitterLength = await streamStatus.getStreamStatus().twitterLength;
   countTweets = 0;
   await saveTweets();
 };

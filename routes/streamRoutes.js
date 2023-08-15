@@ -39,5 +39,10 @@ router.put(
   body("youTubeRecordLength").isNumeric().notEmpty(),
   streamControllers.updateStatus
 );
+router.post(
+  "/status/reset",
+  isAuthorized(["Admin"]),
+  streamControllers.resetStatus
+);
 
 module.exports = router;

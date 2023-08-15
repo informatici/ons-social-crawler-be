@@ -36,12 +36,27 @@ exports.info = async () => {
 
 exports.config = async () => {
   //streamStatus
-  // const existsStreamStatus = await elasticsearch.indices.exists({
-  //   index: "streamStatus",
-  // });
-  // if (!existsStreamStatus) {
-  //   await elasticsearch.indices.create({ index: "streamStatus" });
-  // }
+  const existsStreamStatus = await elasticsearch.indices.exists({
+    index: "streamstatus",
+  });
+  if (!existsStreamStatus) {
+    await elasticsearch.indices.create({ index: "streamstatus" });
+
+    await elasticsearch.index({
+      index: "streamstatus",
+      document: {
+        twitter: false,
+        twitch: false,
+        youTube: false,
+        twitterFlag: false,
+        twitchFlag: false,
+        youTubeFlag: false,
+        twitterLength: 250,
+        twitchLength: 250,
+        youTubeLength: 250,
+      },
+    });
+  }
 
   //twits
   const existsTwits = await elasticsearch.indices.exists({
@@ -494,6 +509,40 @@ exports.getTwitchComments = async (size = 10, page = 1) => {
 
     const comments = await elasticsearch.search(filter);
     return comments?.hits || [];
+  } catch (err) {
+    throw err;
+  }
+};
+
+//StreamStatus
+exports.getStreamStatus = async () => {
+  try {
+    const streamStatus = await elasticsearch.search({
+      index: "streamstatus",
+      size: 1,
+    });
+    return streamStatus?.hits?.hits[0]?._source || null;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateStreamStatus = async (updatedData) => {
+  try {
+    const streamStatus = await elasticsearch.search({
+      index: "streamstatus",
+      size: 1,
+    });
+
+    const id = streamStatus?.hits?.hits[0]?._id || null;
+
+    if (id) {
+      elasticsearch.update({
+        index: "streamstatus",
+        id,
+        doc: updatedData,
+      });
+    }
   } catch (err) {
     throw err;
   }
