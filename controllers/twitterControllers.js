@@ -1,13 +1,26 @@
+const { validationResult } = require("express-validator");
 const elasticsearch = require("../utilities/elasticsearch");
 
 const twitsIndex = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    const twits = await elasticsearch.getTwits();
+    const twits = await elasticsearch.getTwits(
+      req.query.size,
+      req.query.page,
+      req.query.search,
+      req.query.prediction,
+      req.query.sortLabel || "createdAt",
+      req.query.sortOrder || "desc"
+    );
     res.status(200).json(twits);
   } catch (err) {
     next(err);
   }
-}
+};
 
 module.exports = {
   twitsIndex,

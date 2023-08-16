@@ -197,13 +197,71 @@ exports.getTotalTwits = async (data) => {
   }
 };
 
-exports.getTwits = async () => {
+exports.getTwits = async (
+  size = 10,
+  page = 1,
+  search = "",
+  prediction = 0,
+  sortLabel = "createdAt",
+  sortOrder = "desc"
+) => {
   try {
-    const twits = await elasticsearch.search({
+    const from = (page - 1) * size;
+    let filter = {
       index: "twits",
-      size: 100,
-      sort: [{ "data.createdAt": { order: "desc" } }],
-    });
+      size,
+      sort: [{ [`data.${sortLabel}`]: { order: sortOrder } }],
+      from,
+      body: {
+        query: {
+          bool: {
+            must: [],
+          },
+        },
+      },
+    };
+
+    if (search) {
+      filter.body = {
+        query: {
+          bool: {
+            must: [
+              {
+                wildcard: {
+                  "data.text": {
+                    value: `*${search}*`,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      };
+    }
+
+    if (prediction == 2) {
+      filter.body.query.bool.must.push({
+        constant_score: {
+          filter: {
+            exists: {
+              field: "data.prediction",
+            },
+          },
+        },
+      });
+    } else if (prediction == 1) {
+      filter.body.query.bool.must.push({
+        bool: {
+          must_not: {
+            exists: {
+              field: "data.prediction",
+            },
+          },
+        },
+      });
+    }
+
+    const twits = await elasticsearch.search(filter);
     return twits;
   } catch (err) {
     throw err;
@@ -256,11 +314,20 @@ exports.indexYouTubeVideo = async (data) => {
   }
 };
 
-exports.getYouTubeVideos = async (videoId) => {
+exports.getYouTubeVideos = async (
+  videoId,
+  size = 10,
+  page = 1,
+  search = "",
+  prediction = 0,
+  sortLabel = "publishedAt",
+  sortOrder = "desc"
+) => {
   try {
     const result = {
       video: {},
       comments: [],
+      totalComments: 0,
     };
     const res = await elasticsearch.search({
       index: "youtubevideos",
@@ -276,18 +343,65 @@ exports.getYouTubeVideos = async (videoId) => {
     if (videos.length === 1) {
       result.video = videos[0]._source.video;
 
-      const comments = await elasticsearch.search({
+      //Comments
+      const from = (page - 1) * size;
+      let filter = {
         index: "youtubecomments",
-        size: 100,
-        query: {
-          match: {
-            "comment.videoId": videoId,
+        size,
+        sort: [{ [`comment.${sortLabel}`]: { order: sortOrder } }],
+        from,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    "comment.videoId": videoId,
+                  },
+                },
+              ],
+            },
           },
         },
-        sort: [{ "comment.publishedAt": { order: "desc" } }],
-      });
+      };
+
+      if (search) {
+        filter.body.query.bool.must.push({
+          wildcard: {
+            "comment.textDisplay": {
+              value: `*${search}*`,
+            },
+          },
+        });
+      }
+
+      if (prediction == 2) {
+        filter.body.query.bool.must.push({
+          constant_score: {
+            filter: {
+              exists: {
+                field: "comment.prediction",
+              },
+            },
+          },
+        });
+      } else if (prediction == 1) {
+        filter.body.query.bool.must.push({
+          bool: {
+            must_not: {
+              exists: {
+                field: "comment.prediction",
+              },
+            },
+          },
+        });
+      }
+
+      const comments = await elasticsearch.search(filter);
 
       result.comments = comments?.hits?.hits || [];
+      result.totalComments = comments?.hits?.total?.value || 0;
+      //end::Comments
     }
 
     return result;
@@ -366,13 +480,71 @@ exports.indexYouTubeComment = async (data, countComments) => {
   }
 };
 
-exports.getYouTubeComments = async () => {
+exports.getYouTubeComments = async (
+  size = 10,
+  page = 1,
+  search = "",
+  prediction = 0,
+  sortLabel = "publishedAt",
+  sortOrder = "desc"
+) => {
   try {
-    const comments = await elasticsearch.search({
+    const from = (page - 1) * size;
+    let filter = {
       index: "youtubecomments",
-      size: 100,
-      sort: [{ "comment.publishedAt": { order: "desc" } }],
-    });
+      size,
+      sort: [{ [`comment.${sortLabel}`]: { order: sortOrder } }],
+      from,
+      body: {
+        query: {
+          bool: {
+            must: [],
+          },
+        },
+      },
+    };
+
+    if (search) {
+      filter.body = {
+        query: {
+          bool: {
+            must: [
+              {
+                wildcard: {
+                  "comment.textDisplay": {
+                    value: `*${search}*`,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      };
+    }
+
+    if (prediction == 2) {
+      filter.body.query.bool.must.push({
+        constant_score: {
+          filter: {
+            exists: {
+              field: "comment.prediction",
+            },
+          },
+        },
+      });
+    } else if (prediction == 1) {
+      filter.body.query.bool.must.push({
+        bool: {
+          must_not: {
+            exists: {
+              field: "comment.prediction",
+            },
+          },
+        },
+      });
+    }
+
+    const comments = await elasticsearch.search(filter);
     return comments?.hits || [];
   } catch (err) {
     throw err;
@@ -454,12 +626,21 @@ exports.indexTwitchComment = async (data) => {
   }
 };
 
-exports.getTwitchStream = async (streamId) => {
+exports.getTwitchStream = async (
+  streamId,
+  size = 10,
+  page = 1,
+  search = "",
+  prediction = 0,
+  sortLabel = "publishedAt",
+  sortOrder = "desc"
+) => {
   try {
     const result = {
       stream: null,
       video: null,
       comments: [],
+      totalComments: 0,
     };
     const res = await elasticsearch.search({
       index: "twitchstreams",
@@ -475,18 +656,65 @@ exports.getTwitchStream = async (streamId) => {
     if (streams.length === 1) {
       result.stream = streams[0]._source.stream;
 
-      const comments = await elasticsearch.search({
+      //Comments
+      const from = (page - 1) * size;
+      let filter = {
         index: "twitchcomments",
-        size: 100,
-        query: {
-          match: {
-            "comment.streamId": streamId,
+        size,
+        sort: [{ [`comment.${sortLabel}`]: { order: sortOrder } }],
+        from,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    "comment.streamId": streamId,
+                  },
+                },
+              ],
+            },
           },
         },
-        sort: [{ "comment.publishedAt": { order: "desc" } }],
-      });
+      };
+
+      if (search) {
+        filter.body.query.bool.must.push({
+          wildcard: {
+            "comment.textDisplay": {
+              value: `*${search}*`,
+            },
+          },
+        });
+      }
+
+      if (prediction == 2) {
+        filter.body.query.bool.must.push({
+          constant_score: {
+            filter: {
+              exists: {
+                field: "comment.prediction",
+              },
+            },
+          },
+        });
+      } else if (prediction == 1) {
+        filter.body.query.bool.must.push({
+          bool: {
+            must_not: {
+              exists: {
+                field: "comment.prediction",
+              },
+            },
+          },
+        });
+      }
+
+      const comments = await elasticsearch.search(filter);
 
       result.comments = comments?.hits?.hits || [];
+      result.totalComments = comments?.hits?.total?.value || 0;
+      //end::Comments
 
       result.video = await twitch.getVideo(result.stream);
     }
