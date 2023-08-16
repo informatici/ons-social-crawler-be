@@ -6,28 +6,32 @@ const router = express.Router();
 
 router.get(
   "/youtube/start",
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   streamControllers.startYouTube
 );
 
 router.get(
   "/twitter/start",
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   streamControllers.startTwitter
 );
 
 router.get(
   "/twitch/start",
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   streamControllers.startTwitch
 );
 router.get(
   "/twitch/stop",
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   streamControllers.stopTwitch
 );
 
-router.get("/status", isAuthorized(["Admin"]), streamControllers.getStatus);
+router.get(
+  "/status",
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
+  streamControllers.getStatus
+);
 router.put(
   "/status",
   isAuthorized(["Admin"]),
