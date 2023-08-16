@@ -8,7 +8,15 @@ const streamsIndexId = async (req, res, next) => {
   }
 
   try {
-    const stream = await elasticsearch.getTwitchStream(req.params.streamId);
+    const stream = await elasticsearch.getTwitchStream(
+      req.params.streamId,
+      req.query.size,
+      req.query.page,
+      req.query.search,
+      req.query.prediction,
+      req.query.sortLabel || "publishedAt",
+      req.query.sortOrder || "desc"
+    );
     res.status(200).json(stream);
   } catch (err) {
     next(err);

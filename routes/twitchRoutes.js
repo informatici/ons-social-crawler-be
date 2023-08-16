@@ -1,5 +1,4 @@
 const express = require("express");
-const elasticsearch = require("../utilities/elasticsearch");
 const { param, query } = require("express-validator");
 const { isAuthorized } = require("../utilities/firebase.js");
 const twitchControllers = require("../controllers/twitchControllers");
@@ -8,6 +7,12 @@ const router = express.Router();
 router.get(
   "/streams/:streamId",
   param("streamId").notEmpty(),
+  query("size").notEmpty(),
+  query("page").notEmpty(),
+  query("search"),
+  query("prediction"),
+  query("sortLabel"),
+  query("sortOrder"),
   isAuthorized(["Admin"]),
   twitchControllers.streamsIndexId
 );
