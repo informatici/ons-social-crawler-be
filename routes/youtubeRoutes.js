@@ -13,7 +13,7 @@ router.get(
   query("prediction"),
   query("sortLabel"),
   query("sortOrder"),
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   youtubeControllers.videosIndexId
 );
 
@@ -25,7 +25,7 @@ router.get(
   query("prediction"),
   query("sortLabel"),
   query("sortOrder"),
-  isAuthorized(["Admin"]),
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
   youtubeControllers.commentsIndex
 );
 
