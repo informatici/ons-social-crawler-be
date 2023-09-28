@@ -1,30 +1,30 @@
 const elasticsearch = require("../utilities/elasticsearch");
-const streamStatus = async () => {
+const esStreamStatus = async () => {
   return await elasticsearch.getStreamStatus();
 };
 
 exports.canStart = async () => {
-  const streamStatus = await streamStatus();
+  const streamStatus = await esStreamStatus();
   return !streamStatus.twitter && !streamStatus.twitch && !streamStatus.youTube;
 };
 
 exports.canStartTwitter = async () => {
-  const streamStatus = await streamStatus();
+  const streamStatus = await esStreamStatus();
   return streamStatus.twitterFlag;
 };
 
 exports.canStarTwitch = async () => {
-  const streamStatus = await streamStatus();
+  const streamStatus = await esStreamStatus();
   return streamStatus.twitchFlag;
 };
 
 exports.canStartYouTube = async () => {
-  const streamStatus = await streamStatus();
+  const streamStatus = await esStreamStatus();
   return streamStatus.youTubeFlag;
 };
 
 exports.getStreamStatus = async () => {
-  return await streamStatus();
+  return await esStreamStatus();
 };
 
 exports.setTwitterStreamStatus = async (status) => {

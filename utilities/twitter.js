@@ -31,20 +31,25 @@ const saveTweets = async (pageToken = "") => {
   let responseTweets = "";
   if (!lastId) {
     responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&query=(sport)%20lang:it%20(calcio)%20lang:it`
+      `tweets/search/recent?expansions=author_id,referenced_tweets.id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&query=(sport OR calcio) lang:it -is:retweet (is:reply OR is:quote)`
     );
   } else if (pageToken) {
     responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it&next_token=${pageToken}`
+      `tweets/search/recent?expansions=author_id,referenced_tweets.id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet (is:reply OR is:quote)&next_token=${pageToken})`
     );
   } else {
-    responseTweets = await get(
-      `tweets/search/recent?expansions=author_id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport)%20lang:it%20(calcio)%20lang:it`
-    );
+    //Se lastId troppo vecchio
+    try {
+      responseTweets = await get(
+        `tweets/search/recent?expansions=author_id,referenced_tweets.id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet (is:reply OR is:quote)`
+      );
+    } catch {
+      responseTweets = await get(
+        `tweets/search/recent?expansions=author_id,referenced_tweets.id&sort_order=relevancy&tweet.fields=lang,created_at,note_tweet&query=(sport OR calcio) lang:it -is:retweet (is:reply OR is:quote)`
+      );
+    }
   }
 
-  // &query=sport%20calcio%20%23sport%20%23calcio%20lang:it
-  // &query=(sport)%20lang:it%20(calcio)%20lang:it
   const tweets = responseTweets?.data?.data || [];
   const nextPageToken = responseTweets?.data?.meta?.next_token || "";
   // console.log("tweets", responseTweets.data);
@@ -54,9 +59,7 @@ const saveTweets = async (pageToken = "") => {
     const lang = t.lang || "";
 
     if (lang === "it") {
-      // console.log("t", t);
       countTweets = await elasticsearch.indexTwit(t, countTweets);
-      // console.log("countTweets", countTweets);
     }
 
     if (countTweets >= twitterLength) {
