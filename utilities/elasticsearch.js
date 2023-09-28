@@ -133,6 +133,8 @@ exports.indexTwit = async (data, countTweets) => {
     data.response = null;
     data.timestamp = Date.now();
     data.createdAt = data.created_at;
+    data.referenced_tweets = data?.referenced_tweets || [];
+    data.edit_history_tweet_ids = data?.edit_history_tweet_ids || [];
 
     const checkTweet = await elasticsearch.search({
       index: "twits",
@@ -423,6 +425,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
         prediction: null,
         response: null,
         timestamp: Date.now(),
+        replies: data?.replies || [],
       };
 
       const checkComment = await elasticsearch.search({

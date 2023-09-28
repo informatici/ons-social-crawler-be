@@ -40,7 +40,7 @@ const saveVideos = async (pageToken = "") => {
       if (videoId !== "") {
         const responseComments = await get(
           "commentThreads",
-          `videoId=${videoId}&part=snippet&maxResults=100`
+          `videoId=${videoId}&part=snippet,replies&maxResults=100`
         );
 
         const comments = responseComments?.data?.items || [];
