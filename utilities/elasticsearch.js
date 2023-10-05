@@ -829,3 +829,50 @@ exports.updateStreamStatus = async (updatedData) => {
     throw err;
   }
 };
+
+exports.search = async (dateFrom, dateTo) => {
+  console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
+  try {
+    let filter = {
+      index: ["youtubecomments","twitchcomments","twits"],
+      size: 10000, //max size
+      body: {
+        query: {
+          bool: {
+            "should": [ // OR operator, because indexes have different structure
+              {
+                bool: {
+                  "filter": [
+                    {
+                      "range": {
+                        "comment.timestamp": { // indexes: 'youtubecomments', twitchcomments
+                          gte: dateFrom, 
+                          lte: dateTo,
+                        }
+                      }
+                    },
+                  ],
+                }
+              },
+              {
+                "range": {
+                  "data.timestamp": { // index: 'twits'
+                    gte: dateFrom, 
+                    lte: dateTo,
+                  }
+                }
+              }
+            ]
+          },
+        },
+      },
+    };
+
+    const streamStatus = await elasticsearch.search(filter);
+    //console.log('inside elasticsearch.js, streamStatus : %O', streamStatus.hits)
+    console.log('inside elasticsearch.js, streamStatus size : ' + streamStatus.hits.hits.length)
+    return streamStatus?.hits || [];
+  } catch (err) {
+    throw err;
+  }
+};

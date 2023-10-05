@@ -8,6 +8,12 @@ router.get("/info", isAuthorized(["Admin"]), elasticsearchControllers.info);
 router.get("/config", isAuthorized(["Admin"]), elasticsearchControllers.config);
 router.get("/clean", isAuthorized(["Admin"]), elasticsearchControllers.clean);
 
+router.get("/query", 
+  query("dateFrom").notEmpty(),
+  query("dateTo").notEmpty(),
+  elasticsearchControllers.search
+);
+
 router.get(
   "/query/:social",
   param("social").notEmpty(),
