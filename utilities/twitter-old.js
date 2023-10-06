@@ -33,7 +33,6 @@ exports.setRules = async () => {
       { value: "(calcio) lang:it", tag: "calcio" },
     ],
   });
-  console.log("Added rules", addedRules);
 };
 
 exports.startStream = async () => {
@@ -76,4 +75,4 @@ exports.startStream = async () => {
 exports.stopStream = () => {
   if (!stream) return;
   stream.disconnect();
-}
+};
