@@ -22,6 +22,7 @@ const twitchClientId = process.env.NODE_TWITCH_CLIENT_ID;
 const twitchClientSecret = process.env.NODE_TWITCH_CLIENT_SECRET;
 const twitchOptUsername = process.env.NODE_TWITCH_OPT_USERNAME;
 const twitchOptPassword = process.env.NODE_TWITCH_OPT_PASSWORD;
+const firebaseServiceAccount = process.env.NODE_FIREBASE_SERVICE_ACCOUNT;
 
 module.exports = {
   appName,
@@ -46,4 +47,5 @@ module.exports = {
   twitchClientSecret,
   twitchOptUsername,
   twitchOptPassword,
+  firebaseServiceAccount,
 };

@@ -127,10 +127,16 @@ spec:
             - name: NODE_ELASTICSEARCH_CA_CERT_PATH
               value: "/usr/src/app/http_ca.crt"
 
+            - name: NODE_FIREBASE_SERVICE_ACCOUNT
+              value: "/usr/src/app/service_account.json"
+
           volumeMounts:
             - name: elastic-ca-cert
               mountPath: /usr/src/app/http_ca.crt # This should be your final destination
               subPath: http_ca.crt # The name of the file to be placed inside /etc, the filename used here and in mountPath should be same.
+            - name: firebase-service-account-json
+              mountPath: /usr/src/app/service_account.json
+              subPath: service_account.json
 
           livenessProbe:
             httpGet:
@@ -151,6 +157,12 @@ spec:
             items:
               - key: http_ca.crt
                 path: http_ca.crt
+        - name: firebase-service-account-json
+          configMap:
+            name: firebase-service-account
+            items:
+              - key: service_account.json
+                path: service_account.json
 ---
 apiVersion: v1
 kind: Service
