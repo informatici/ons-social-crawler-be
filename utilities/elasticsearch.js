@@ -156,22 +156,19 @@ exports.indexTwit = async (data, countTweets) => {
       return countTweets;
     }
 
-    const chatBotPrediction = await axios.post(
-      "predict/v2/hatespeechdictionary",
-      {
-        source: "twitter",
-        items: [{ id: data.id, text: data.text }],
-      }
-    );
+    const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
+      source: "twitter",
+      items: [{ id: data.id, text: data.text }],
+    });
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
 
     if (isHate === 1) {
       data.prediction = chatBotPrediction.data.response[0];
 
-      const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+      const chatBotResponse = await axios.post("chatter/mainchatter", {
         source: "twitter",
-        items: [{ text: data.text }],
+        text: data.text,
       });
 
       data.response = chatBotResponse.data.response;
@@ -454,7 +451,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       }
 
       const chatBotPrediction = await axios.post(
-        "predict/v2/hatespeechdictionary",
+        "predict/hatespeechdictionary",
         {
           source: "youtube",
           items: [{ id: comment.id, text: comment.textDisplay }],
@@ -466,13 +463,21 @@ exports.indexYouTubeComment = async (data, countComments) => {
       if (isHate === 1) {
         comment.prediction = chatBotPrediction.data.response[0];
 
-        const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+        const chatBotResponse = await axios.post("chatter/mainchatter", {
           source: "youtube",
-          items: [{ text: comment.textDisplay }],
+          text: comment.textDisplay,
         });
 
-        comment.response = chatBotResponse.data.response;
+        comment.response = chatBotResponse.data.response || [];
+
+        if (comment.response.length > 0) {
+          comment.response = comment.response[0]?.answer;
+        } else {
+          comment.response = "";
+        }
       }
+
+      console.log("comment", comment);
 
       await elasticsearch.index({
         index: "youtubecomments",
@@ -484,6 +489,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       return countComments + 1;
     }
   } catch (e) {
+    console.log("e", e);
     return countComments;
   }
 };
@@ -606,22 +612,19 @@ exports.indexTwitchComment = async (data) => {
       timestamp: Date.now(),
     };
 
-    const chatBotPrediction = await axios.post(
-      "predict/v2/hatespeechdictionary",
-      {
-        source: "twitch",
-        items: [{ id: comment.streamId, text: comment.textDisplay }],
-      }
-    );
+    const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
+      source: "twitch",
+      items: [{ id: comment.streamId, text: comment.textDisplay }],
+    });
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
 
     if (isHate === 1) {
       comment.prediction = chatBotPrediction.data.response[0];
 
-      const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+      const chatBotResponse = await axios.post("chatter/mainchatter", {
         source: "twitch",
-        items: [{ text: comment.textDisplay }],
+        text: comment.textDisplay,
       });
 
       comment.response = chatBotResponse.data.response;
