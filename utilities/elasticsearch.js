@@ -468,16 +468,8 @@ exports.indexYouTubeComment = async (data, countComments) => {
           text: comment.textDisplay,
         });
 
-        comment.response = chatBotResponse.data.response || [];
-
-        if (comment.response.length > 0) {
-          comment.response = comment.response[0]?.answer;
-        } else {
-          comment.response = "";
-        }
+        comment.response = chatBotResponse.data.response;
       }
-
-      console.log("comment", comment);
 
       await elasticsearch.index({
         index: "youtubecomments",
