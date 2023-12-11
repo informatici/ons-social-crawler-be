@@ -232,6 +232,7 @@ exports.getTwits = async (
                 wildcard: {
                   "data.text": {
                     value: `*${search}*`,
+                    case_insensitive: true,
                   },
                 },
               },
@@ -372,6 +373,7 @@ exports.getYouTubeVideos = async (
           wildcard: {
             "comment.textDisplay": {
               value: `*${search}*`,
+              case_insensitive: true,
             },
           },
         });
@@ -479,6 +481,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       return countComments + 1;
     }
   } catch (e) {
+    console.log("e", e);
     return countComments;
   }
 };
@@ -516,6 +519,7 @@ exports.getYouTubeComments = async (
                 wildcard: {
                   "comment.textDisplay": {
                     value: `*${search}*`,
+                    case_insensitive: true,
                   },
                 },
               },
@@ -686,6 +690,7 @@ exports.getTwitchStream = async (
           wildcard: {
             "comment.textDisplay": {
               value: `*${search}*`,
+              case_insensitive: true,
             },
           },
         });
@@ -761,6 +766,7 @@ exports.getTwitchComments = async (
                 wildcard: {
                   "comment.textDisplay": {
                     value: `*${search}*`,
+                    case_insensitive: true,
                   },
                 },
               },
