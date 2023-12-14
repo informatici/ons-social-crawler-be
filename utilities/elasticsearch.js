@@ -838,3 +838,75 @@ exports.updateStreamStatus = async (updatedData) => {
     throw err;
   }
 };
+
+exports.search = async (dateFrom, dateTo) => {
+  //console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
+  try {
+    let filter = {
+      index: ["youtubecomments","twitchcomments","twits"],
+      size: 10000, //max size
+      scroll: "1m",
+      body: {
+        query: {
+          bool: {
+            "should": [ // OR operator, because indexes have different structure
+              {
+                bool: {
+                  "filter": [
+                    {
+                      "range": {
+                        "comment.timestamp": { // indexes: 'youtubecomments', twitchcomments
+                          format: "strict_date_optional_time",
+                          gte: dateFrom, 
+                          lte: dateTo,
+                        }
+                      }
+                    },
+                  ],
+                }
+              },
+              {
+                "range": {
+                  "data.timestamp": { // index: 'twits'
+                    format: "strict_date_optional_time",
+                    gte: dateFrom, 
+                    lte: dateTo,
+                  }
+                }
+              }
+            ]
+          },
+        },
+      },
+    };
+
+    let i = 1
+    // first request: 'POST /index/type/_search?scroll=1m'
+    streamStatus = await elasticsearch.search(filter);
+    //console.log('inside elasticsearch.js, streamStatus %d : %O', i, streamStatus) //first response
+    result = streamStatus?.hits || []
+    scroll_id = {
+      scroll_id: streamStatus._scroll_id
+    }
+    let more_to_read = streamStatus?.hits.total.value - streamStatus?.hits.hits.length
+    i++;
+
+    // subsequent requests 'POST /_search/scroll')
+    while (more_to_read > 0) {
+      streamStatus = await elasticsearch.scroll(scroll_id);
+      //console.log('inside elasticsearch.js, streamStatus %d  : %O', i, streamStatus) //subsequent responses
+      result.hits = result.hits.concat(streamStatus?.hits.hits)
+      more_to_read -= streamStatus?.hits.hits.length
+      if (more_to_read < 0) {
+        more_to_read = 0
+      }
+      //console.log('more to read : %d', more_to_read)
+      i++;
+    }
+    //console.log('inside elasticsearch.js, result : %O', result)
+    //console.log('inside elasticsearch.js, result size : ' + result.hits.length)
+    return result
+  } catch (err) {
+    throw err;
+  }
+};
