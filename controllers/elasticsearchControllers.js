@@ -79,7 +79,7 @@ const search = async (req, res, next) => {
       Date.parse(req.query.dateTo),
     );
     //console.log('inside elasticsearchControllers, result : %O', result)
-    console.log('inside elasticsearchControllers, result size : ' + result.hits.length)
+    //console.log('inside elasticsearchControllers, result size : ' + result.hits.length)
     res.status(200).json(result);
   } catch (err) {
     next(err);

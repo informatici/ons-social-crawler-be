@@ -834,7 +834,7 @@ exports.updateStreamStatus = async (updatedData) => {
 };
 
 exports.search = async (dateFrom, dateTo) => {
-  console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
+  //console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
   try {
     let filter = {
       index: ["youtubecomments","twitchcomments","twits"],
@@ -898,7 +898,7 @@ exports.search = async (dateFrom, dateTo) => {
       i++;
     }
     //console.log('inside elasticsearch.js, result : %O', result)
-    console.log('inside elasticsearch.js, result size : ' + result.hits.length)
+    //console.log('inside elasticsearch.js, result size : ' + result.hits.length)
     return result
   } catch (err) {
     throw err;
