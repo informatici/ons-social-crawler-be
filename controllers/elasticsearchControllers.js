@@ -65,7 +65,7 @@ const query = async (req, res, next) => {
 };
 
 const search = async (req, res, next) => {
-  console.log('inside elasticsearchControllers, search : ' + req.query.dateFrom + ' ' + req.query.dateTo)
+  //console.log('inside elasticsearchControllers, search : ' + req.query.dateFrom + ' ' + req.query.dateTo)
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
