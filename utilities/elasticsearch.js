@@ -97,6 +97,21 @@ exports.config = async () => {
   if (!existsTwitchComments) {
     await elasticsearch.indices.create({ index: "twitchcomments" });
   }
+
+  //HowItWorks
+  const existsHowItWorks = await elasticsearch.indices.exists({
+    index: "howitworks",
+  });
+  if (!existsHowItWorks) {
+    await elasticsearch.indices.create({ index: "howitworks" });
+
+    await elasticsearch.index({
+      index: "howitworks",
+      document: {
+        text: "",
+      },
+    });
+  }
 };
 
 exports.clean = async () => {
@@ -832,6 +847,42 @@ exports.updateStreamStatus = async (updatedData) => {
         index: "streamstatus",
         id,
         doc: updatedData,
+      });
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getHowItWorks = async () => {
+  try {
+    const res = await elasticsearch.search({
+      index: "howitworks",
+      size: 1,
+    });
+
+    return res;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateHowItWorks = async (text) => {
+  try {
+    const howitworks = await elasticsearch.search({
+      index: "howitworks",
+      size: 1,
+    });
+
+    const id = howitworks?.hits?.hits[0]?._id || null;
+
+    if (id) {
+      elasticsearch.update({
+        index: "howitworks",
+        id,
+        doc: {
+          text,
+        },
       });
     }
   } catch (err) {
