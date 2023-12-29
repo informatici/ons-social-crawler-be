@@ -24,6 +24,7 @@ const twitchRoutes = require("./routes/twitchRoutes.js");
 const authRoutes = require("./routes/authRoutes.js");
 const streamRoutes = require("./routes/streamRoutes.js");
 const elasticsearchRoutes = require("./routes/elasticsearchRoutes.js");
+const howItworksRoutes = require("./routes/howItWorkRoutes.js");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -43,6 +44,7 @@ app.use("/api/twitch", twitchRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/stream", streamRoutes);
 app.use("/api/elasticsearch", elasticsearchRoutes);
+app.use("/api/howitworks", howItworksRoutes);
 
 app.use("/api/checker", (req, res, next) => {
   try {
