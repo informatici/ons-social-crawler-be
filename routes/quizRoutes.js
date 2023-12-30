@@ -1,19 +1,20 @@
 const express = require("express");
 const { body } = require("express-validator");
 const { isAuthorized } = require("../utilities/firebase.js");
-const howItWorksControllers = require("../controllers/howItWorksControllers.js");
+const quizControllers = require("../controllers/quizControllers.js");
 const router = express.Router();
 
-router.get(
+router.post(
   "/",
   isAuthorized(["Admin", "Teacher", "Trainer"]),
-  howItWorksControllers.index
+  body("type").isNumeric({ min: 0 }),
+  quizControllers.create
 );
 router.put(
   "/",
   isAuthorized(["Admin"]),
   body("text").isString(),
-  howItWorksControllers.update
+  quizControllers.update
 );
 
 module.exports = router;
