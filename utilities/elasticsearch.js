@@ -97,6 +97,21 @@ exports.config = async () => {
   if (!existsTwitchComments) {
     await elasticsearch.indices.create({ index: "twitchcomments" });
   }
+
+  //HowItWorks
+  const existsHowItWorks = await elasticsearch.indices.exists({
+    index: "howitworks",
+  });
+  if (!existsHowItWorks) {
+    await elasticsearch.indices.create({ index: "howitworks" });
+
+    await elasticsearch.index({
+      index: "howitworks",
+      document: {
+        text: "",
+      },
+    });
+  }
 };
 
 exports.clean = async () => {
@@ -156,22 +171,19 @@ exports.indexTwit = async (data, countTweets) => {
       return countTweets;
     }
 
-    const chatBotPrediction = await axios.post(
-      "predict/v2/hatespeechdictionary",
-      {
-        source: "twitter",
-        items: [{ id: data.id, text: data.text }],
-      }
-    );
+    const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
+      source: "twitter",
+      items: [{ id: data.id, text: data.text }],
+    });
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
 
     if (isHate === 1) {
       data.prediction = chatBotPrediction.data.response[0];
 
-      const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+      const chatBotResponse = await axios.post("chatter/mainchatter", {
         source: "twitter",
-        items: [{ text: data.text }],
+        text: data.text,
       });
 
       data.response = chatBotResponse.data.response;
@@ -267,8 +279,11 @@ exports.getTwits = async (
       });
     }
 
-    const twits = await elasticsearch.search(filter);
-    return twits;
+    const total = await elasticsearch.count({ index: "twits" });
+    const resComments = await elasticsearch.search(filter);
+    const twits = resComments || [];
+    const comments = { ...twits, totalComments: total.count };
+    return comments;
   } catch (err) {
     throw err;
   }
@@ -454,7 +469,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       }
 
       const chatBotPrediction = await axios.post(
-        "predict/v2/hatespeechdictionary",
+        "predict/hatespeechdictionary",
         {
           source: "youtube",
           items: [{ id: comment.id, text: comment.textDisplay }],
@@ -466,9 +481,9 @@ exports.indexYouTubeComment = async (data, countComments) => {
       if (isHate === 1) {
         comment.prediction = chatBotPrediction.data.response[0];
 
-        const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+        const chatBotResponse = await axios.post("chatter/mainchatter", {
           source: "youtube",
-          items: [{ text: comment.textDisplay }],
+          text: comment.textDisplay,
         });
 
         comment.response = chatBotResponse.data.response;
@@ -484,6 +499,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       return countComments + 1;
     }
   } catch (e) {
+    console.log("e", e);
     return countComments;
   }
 };
@@ -553,8 +569,12 @@ exports.getYouTubeComments = async (
       });
     }
 
-    const comments = await elasticsearch.search(filter);
-    return comments?.hits || [];
+    const total = await elasticsearch.count({ index: "youtubecomments" });
+    const resComments = await elasticsearch.search(filter);
+    const hits = resComments?.hits || [];
+    const comments = { ...hits, totalComments: total.count };
+
+    return comments;
   } catch (err) {
     throw err;
   }
@@ -606,22 +626,19 @@ exports.indexTwitchComment = async (data) => {
       timestamp: Date.now(),
     };
 
-    const chatBotPrediction = await axios.post(
-      "predict/v2/hatespeechdictionary",
-      {
-        source: "twitch",
-        items: [{ id: comment.streamId, text: comment.textDisplay }],
-      }
-    );
+    const chatBotPrediction = await axios.post("predict/hatespeechdictionary", {
+      source: "twitch",
+      items: [{ id: comment.streamId, text: comment.textDisplay }],
+    });
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
 
     if (isHate === 1) {
       comment.prediction = chatBotPrediction.data.response[0];
 
-      const chatBotResponse = await axios.post("chatter/v2/mainchatter", {
+      const chatBotResponse = await axios.post("chatter/mainchatter", {
         source: "twitch",
-        items: [{ text: comment.textDisplay }],
+        text: comment.textDisplay,
       });
 
       comment.response = chatBotResponse.data.response;
@@ -803,8 +820,11 @@ exports.getTwitchComments = async (
       });
     }
 
-    const comments = await elasticsearch.search(filter);
-    return comments?.hits || [];
+    const total = await elasticsearch.count({ index: "twitchcomments" });
+    const resComments = await elasticsearch.search(filter);
+    const hits = resComments?.hits || [];
+    const comments = { ...hits, totalComments: total.count };
+    return comments;
   } catch (err) {
     throw err;
   }
@@ -837,6 +857,117 @@ exports.updateStreamStatus = async (updatedData) => {
         index: "streamstatus",
         id,
         doc: updatedData,
+      });
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.search = async (dateFrom, dateTo) => {
+  //console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
+  try {
+    let filter = {
+      index: ["youtubecomments", "twitchcomments", "twits"],
+      size: 10000, //max size
+      scroll: "1m",
+      body: {
+        query: {
+          bool: {
+            should: [
+              // OR operator, because indexes have different structure
+              {
+                bool: {
+                  filter: [
+                    {
+                      range: {
+                        "comment.timestamp": {
+                          // indexes: 'youtubecomments', twitchcomments
+                          format: "strict_date_optional_time",
+                          gte: dateFrom,
+                          lte: dateTo,
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                range: {
+                  "data.timestamp": {
+                    // index: 'twits'
+                    format: "strict_date_optional_time",
+                    gte: dateFrom,
+                    lte: dateTo,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    let i = 1;
+    // first request: 'POST /index/type/_search?scroll=1m'
+    streamStatus = await elasticsearch.search(filter);
+    //console.log('inside elasticsearch.js, streamStatus %d : %O', i, streamStatus) //first response
+    result = streamStatus?.hits || [];
+    scroll_id = {
+      scroll_id: streamStatus._scroll_id,
+    };
+    let more_to_read =
+      streamStatus?.hits.total.value - streamStatus?.hits.hits.length;
+    i++;
+
+    // subsequent requests 'POST /_search/scroll')
+    while (more_to_read > 0) {
+      streamStatus = await elasticsearch.scroll(scroll_id);
+      //console.log('inside elasticsearch.js, streamStatus %d  : %O', i, streamStatus) //subsequent responses
+      result.hits = result.hits.concat(streamStatus?.hits.hits);
+      more_to_read -= streamStatus?.hits.hits.length;
+      if (more_to_read < 0) {
+        more_to_read = 0;
+      }
+      //console.log('more to read : %d', more_to_read)
+      i++;
+    }
+    //console.log('inside elasticsearch.js, result : %O', result)
+    //console.log('inside elasticsearch.js, result size : ' + result.hits.length)
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+exports.getHowItWorks = async () => {
+  try {
+    const res = await elasticsearch.search({
+      index: "howitworks",
+      size: 1,
+    });
+
+    return res;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateHowItWorks = async (text) => {
+  try {
+    const howitworks = await elasticsearch.search({
+      index: "howitworks",
+      size: 1,
+    });
+
+    const id = howitworks?.hits?.hits[0]?._id || null;
+
+    if (id) {
+      elasticsearch.update({
+        index: "howitworks",
+        id,
+        doc: {
+          text,
+        },
       });
     }
   } catch (err) {
