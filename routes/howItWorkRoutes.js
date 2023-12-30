@@ -8,7 +8,7 @@ router.get("/", isAuthorized(["Admin"]), howItWorksControllers.index);
 router.put(
   "/",
   isAuthorized(["Admin"]),
-  body("text").isString().notEmpty().escape(),
+  body("text").isString(),
   howItWorksControllers.update
 );
 
