@@ -64,9 +64,32 @@ const query = async (req, res, next) => {
   }
 };
 
+const search = async (req, res, next) => {
+  //console.log('inside elasticsearchControllers, search : ' + req.query.dateFrom + ' ' + req.query.dateTo)
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    let result = null;
+
+    result = await elasticsearch.search(
+      Date.parse(req.query.dateFrom),
+      Date.parse(req.query.dateTo),
+    );
+    //console.log('inside elasticsearchControllers, result : %O', result)
+    //console.log('inside elasticsearchControllers, result size : ' + result.hits.length)
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   info,
   config,
   clean,
   query,
+  search,
 };
