@@ -10,11 +10,11 @@ router.post(
   body("type").isNumeric({ min: 0 }),
   quizControllers.create
 );
-router.put(
-  "/",
-  isAuthorized(["Admin"]),
-  body("text").isString(),
-  quizControllers.update
+router.post(
+  "/export",
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
+  body("quiz").isArray(),
+  quizControllers.exportQuiz
 );
 
 module.exports = router;

@@ -981,14 +981,14 @@ exports.updateHowItWorks = async (text) => {
   }
 };
 
-exports.getRandomItem = async () => {
+exports.getRandomItem = async (forceHate = false) => {
   try {
     const indexArray = ["youtubecomments", "twitchcomments", "twits"];
     const index = indexArray[Math.floor(Math.random() * indexArray.length)];
     const randomBoolean = Math.random() < 0.5;
     let body = null;
 
-    if (randomBoolean) {
+    if (randomBoolean || forceHate) {
       body = await elasticsearch.search({
         index,
         body: {
@@ -1029,6 +1029,15 @@ exports.getRandomItem = async () => {
     const randomItem = body.hits.hits[randomIndex]._source;
 
     return randomItem[index === "twits" ? "data" : "comment"];
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getAnswers = async (forceHate = false) => {
+  try {
+    const answers = await axios.get("predict/v2/answers");
+    return answers?.data?.response || [];
   } catch (err) {
     throw err;
   }
