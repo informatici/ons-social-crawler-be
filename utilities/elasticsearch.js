@@ -980,3 +980,56 @@ exports.updateHowItWorks = async (text) => {
     throw err;
   }
 };
+
+exports.getRandomItem = async () => {
+  try {
+    const indexArray = ["youtubecomments", "twitchcomments", "twits"];
+    const index = indexArray[Math.floor(Math.random() * indexArray.length)];
+    const randomBoolean = Math.random() < 0.5;
+    let body = null;
+
+    if (randomBoolean) {
+      body = await elasticsearch.search({
+        index,
+        body: {
+          size: 100,
+          query: {
+            bool: {
+              must: [
+                {
+                  exists: {
+                    field:
+                      index === "twits"
+                        ? "data.prediction"
+                        : "comment.prediction",
+                  },
+                }, // Add condition for 'yourField' not being null
+                { function_score: { random_score: {} } },
+              ],
+            },
+          },
+        },
+      });
+    } else {
+      body = await elasticsearch.search({
+        index,
+        body: {
+          size: 10000,
+          query: {
+            function_score: {
+              random_score: {},
+            },
+          },
+        },
+      });
+    }
+
+    // Select a random item from the result
+    const randomIndex = Math.floor(Math.random() * body.hits.hits.length);
+    const randomItem = body.hits.hits[randomIndex]._source;
+
+    return randomItem[index === "twits" ? "data" : "comment"];
+  } catch (err) {
+    throw err;
+  }
+};

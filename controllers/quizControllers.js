@@ -3,11 +3,17 @@ const elasticsearch = require("../utilities/elasticsearch");
 
 const create = async (req, res, next) => {
   try {
-    const result = await elasticsearch.getHowItWorks();
-    const howItWorks = result?.hits?.hits[0]?._source?.text || "";
-    res.status(200).json({
-      howItWorks,
-    });
+    const comment = await elasticsearch.getRandomItem();
+    console.log(comment);
+
+    const quiz = {
+      id: Date.now(),
+      type: req.body.type,
+      description: comment.textDisplay || comment.text,
+      hasHate: comment.prediction ? true : false,
+    };
+
+    res.status(200).json(quiz);
   } catch (err) {
     next(err);
   }
