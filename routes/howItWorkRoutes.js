@@ -4,7 +4,11 @@ const { isAuthorized } = require("../utilities/firebase.js");
 const howItWorksControllers = require("../controllers/howItWorksControllers.js");
 const router = express.Router();
 
-router.get("/", isAuthorized(["Admin"]), howItWorksControllers.index);
+router.get(
+  "/",
+  isAuthorized(["Admin", "Teacher", "Trainer"]),
+  howItWorksControllers.index
+);
 router.put(
   "/",
   isAuthorized(["Admin"]),
