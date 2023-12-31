@@ -25,6 +25,7 @@ const authRoutes = require("./routes/authRoutes.js");
 const streamRoutes = require("./routes/streamRoutes.js");
 const elasticsearchRoutes = require("./routes/elasticsearchRoutes.js");
 const howItworksRoutes = require("./routes/howItWorkRoutes.js");
+const quizRoutes = require("./routes/quizRoutes.js");
 
 //HEADERS
 app.use((req, res, next) => {
@@ -45,6 +46,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/stream", streamRoutes);
 app.use("/api/elasticsearch", elasticsearchRoutes);
 app.use("/api/howitworks", howItworksRoutes);
+app.use("/api/quiz", quizRoutes);
 
 app.use("/api/checker", (req, res, next) => {
   try {
