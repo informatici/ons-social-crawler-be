@@ -3,16 +3,21 @@ const elasticsearch = require("../utilities/elasticsearch");
 const excelJS = require("exceljs");
 
 const create = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     let answers = [];
     const comment = await elasticsearch.getRandomItem(req.body.type > 1);
+    console.log(comment);
 
     if (req.body.type === 2 && comment.prediction) {
       answers = await elasticsearch.getAnswers();
 
       const shuffledArray = [...answers];
 
-      // Fisher-Yates (Knuth) shuffle algorithm
       for (let i = shuffledArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffledArray[i], shuffledArray[j]] = [
@@ -21,9 +26,11 @@ const create = async (req, res, next) => {
         ];
       }
 
-      const filteredArray = shuffledArray.filter((obj) => obj.risposta !== "");
+      const answer = comment?.response[0]?.answer || comment?.response || "";
+      const filteredArray = shuffledArray.filter(
+        (obj) => obj.risposta !== answer
+      );
 
-      // Return the first 'count' elements
       answers = filteredArray.slice(0, 3).map((x) => {
         return {
           answer: x.risposta,
@@ -31,9 +38,14 @@ const create = async (req, res, next) => {
         };
       });
       answers.push({
-        answer: comment?.response[0]?.answer || "",
+        answer,
         right: true,
       });
+
+      for (let i = answers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [answers[i], answers[j]] = [answers[j], answers[i]];
+      }
     }
 
     const quiz = {
@@ -52,6 +64,11 @@ const create = async (req, res, next) => {
 };
 
 const exportQuiz = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("Quiz");
 
