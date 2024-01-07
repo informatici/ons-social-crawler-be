@@ -189,7 +189,7 @@ exports.indexTwit = async (data, countTweets) => {
         items: [{ id: data.id, text: data.text }],
       });
 
-      data.response = chatBotResponse.data.response;
+      data.response = chatBotResponse.data?.response[0]?.answer || null;
     }
 
     await elasticsearch.index({
@@ -489,7 +489,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
           items: [{ id: comment.id, text: comment.textDisplay }],
         });
 
-        comment.response = chatBotResponse.data.response;
+        comment.response = chatBotResponse.data?.response[0]?.answer || null;
       }
 
       await elasticsearch.index({
@@ -502,7 +502,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       return countComments + 1;
     }
   } catch (e) {
-    console.log("e", e);
+    console.log("errore qui", e);
     return countComments;
   }
 };
@@ -647,7 +647,7 @@ exports.indexTwitchComment = async (data) => {
         items: [{ id: comment.streamId, text: comment.textDisplay }],
       });
 
-      comment.response = chatBotResponse.data.response;
+      comment.response = chatBotResponse.data?.response[0]?.answer || null;
     }
 
     await elasticsearch.index({
