@@ -22,6 +22,7 @@
     "helmet": "^6.0.1",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
+    "pdf-parse-fork": "^1.2.0",
     "tmi.js": "^1.8.5",
     "twitter-api-v2": "^1.14.2",
     "uuid": "^9.0.0"

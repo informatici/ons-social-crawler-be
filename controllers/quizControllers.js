@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const elasticsearch = require("../utilities/elasticsearch");
-const excelJS = require("exceljs");
+// const excelJS = require("exceljs");
+
+const pdf = require("pdf-parse-fork");
 
 const create = async (req, res, next) => {
   const errors = validationResult(req);
