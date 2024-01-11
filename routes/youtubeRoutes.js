@@ -13,6 +13,8 @@ router.get(
   query("prediction"),
   query("sortLabel"),
   query("sortOrder"),
+  query("dateFrom").notEmpty(),
+  query("dateTo").notEmpty(),
   isAuthorized(["Admin", "Teacher", "Trainer"]),
   youtubeControllers.videosIndexId
 );
@@ -25,6 +27,8 @@ router.get(
   query("prediction"),
   query("sortLabel"),
   query("sortOrder"),
+  query("dateFrom").notEmpty(),
+  query("dateTo").notEmpty(),
   isAuthorized(["Admin", "Teacher", "Trainer"]),
   youtubeControllers.commentsIndex
 );
