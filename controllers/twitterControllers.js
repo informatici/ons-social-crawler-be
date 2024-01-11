@@ -14,7 +14,9 @@ const twitsIndex = async (req, res, next) => {
       req.query.search,
       req.query.prediction,
       req.query.sortLabel || "createdAt",
-      req.query.sortOrder || "desc"
+      req.query.sortOrder || "desc",
+      Date.parse(req.query.dateFrom),
+      Date.parse(req.query.dateTo)
     );
     res.status(200).json(twits);
   } catch (err) {
