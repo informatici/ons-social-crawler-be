@@ -223,7 +223,9 @@ exports.getTwits = async (
   search = "",
   prediction = 0,
   sortLabel = "createdAt",
-  sortOrder = "desc"
+  sortOrder = "desc",
+  dateFrom = "",
+  dateTo = ""
 ) => {
   try {
     const from = (page - 1) * size;
@@ -236,6 +238,7 @@ exports.getTwits = async (
         query: {
           bool: {
             must: [],
+            filter: [],
           },
         },
       },
@@ -277,6 +280,18 @@ exports.getTwits = async (
             exists: {
               field: "data.prediction",
             },
+          },
+        },
+      });
+    }
+
+    if (dateFrom && dateTo) {
+      filter.body.query.bool.filter.push({
+        range: {
+          "data.timestamp": {
+            format: "strict_date_optional_time",
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       });
@@ -345,7 +360,9 @@ exports.getYouTubeVideos = async (
   search = "",
   prediction = 0,
   sortLabel = "publishedAt",
-  sortOrder = "desc"
+  sortOrder = "desc",
+  dateFrom = "",
+  dateTo = ""
 ) => {
   try {
     const result = {
@@ -384,6 +401,7 @@ exports.getYouTubeVideos = async (
                   },
                 },
               ],
+              filter: [],
             },
           },
         },
@@ -417,6 +435,18 @@ exports.getYouTubeVideos = async (
               exists: {
                 field: "comment.prediction",
               },
+            },
+          },
+        });
+      }
+
+      if (dateFrom && dateTo) {
+        filter.body.query.bool.filter.push({
+          range: {
+            "comment.timestamp": {
+              format: "strict_date_optional_time",
+              gte: dateFrom,
+              lte: dateTo,
             },
           },
         });
@@ -502,7 +532,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       return countComments + 1;
     }
   } catch (e) {
-    console.log("errore qui", e);
+    console.log("Error", e);
     return countComments;
   }
 };
@@ -513,7 +543,9 @@ exports.getYouTubeComments = async (
   search = "",
   prediction = 0,
   sortLabel = "publishedAt",
-  sortOrder = "desc"
+  sortOrder = "desc",
+  dateFrom = "",
+  dateTo = ""
 ) => {
   try {
     const from = (page - 1) * size;
@@ -526,6 +558,7 @@ exports.getYouTubeComments = async (
         query: {
           bool: {
             must: [],
+            filter: [],
           },
         },
       },
@@ -567,6 +600,18 @@ exports.getYouTubeComments = async (
             exists: {
               field: "comment.prediction",
             },
+          },
+        },
+      });
+    }
+
+    if (dateFrom && dateTo) {
+      filter.body.query.bool.filter.push({
+        range: {
+          "comment.timestamp": {
+            format: "strict_date_optional_time",
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       });
@@ -668,7 +713,9 @@ exports.getTwitchStream = async (
   search = "",
   prediction = 0,
   sortLabel = "publishedAt",
-  sortOrder = "desc"
+  sortOrder = "desc",
+  dateFrom = "",
+  dateTo = ""
 ) => {
   try {
     const result = {
@@ -708,6 +755,7 @@ exports.getTwitchStream = async (
                   },
                 },
               ],
+              filter: [],
             },
           },
         },
@@ -746,6 +794,18 @@ exports.getTwitchStream = async (
         });
       }
 
+      if (dateFrom && dateTo) {
+        filter.body.query.bool.filter.push({
+          range: {
+            "comment.timestamp": {
+              format: "strict_date_optional_time",
+              gte: dateFrom,
+              lte: dateTo,
+            },
+          },
+        });
+      }
+
       const comments = await elasticsearch.search(filter);
 
       result.comments = comments?.hits?.hits || [];
@@ -767,7 +827,9 @@ exports.getTwitchComments = async (
   search = "",
   prediction = 0,
   sortLabel = "publishedAt",
-  sortOrder = "desc"
+  sortOrder = "desc",
+  dateFrom = "",
+  dateTo = ""
 ) => {
   try {
     const from = (page - 1) * size;
@@ -780,6 +842,7 @@ exports.getTwitchComments = async (
         query: {
           bool: {
             must: [],
+            filter: [],
           },
         },
       },
@@ -821,6 +884,18 @@ exports.getTwitchComments = async (
             exists: {
               field: "comment.prediction",
             },
+          },
+        },
+      });
+    }
+
+    if (dateFrom && dateTo) {
+      filter.body.query.bool.filter.push({
+        range: {
+          "comment.timestamp": {
+            format: "strict_date_optional_time",
+            gte: dateFrom,
+            lte: dateTo,
           },
         },
       });
