@@ -142,14 +142,16 @@ spec:
             httpGet:
               path: /api/checker
               port: 8080
-            initialDelaySeconds: 3
+            initialDelaySeconds: 10
             periodSeconds: 3
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /api/checker
               port: 8080
-            initialDelaySeconds: 3
+            initialDelaySeconds: 10
             periodSeconds: 3
+            timeoutSeconds: 5
       volumes:
         - name: elastic-ca-cert
           configMap:
