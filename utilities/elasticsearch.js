@@ -987,15 +987,25 @@ exports.getRandomItem = async (forceHate = false) => {
     const index = indexArray[Math.floor(Math.random() * indexArray.length)];
     const randomBoolean = Math.random() < 0.5;
     let body = null;
+    const startDate = new Date("2024-01-02T00:00:00");
 
     if (randomBoolean || forceHate) {
       body = await elasticsearch.search({
         index,
         body: {
-          size: 100,
+          size: 10000,
           query: {
             bool: {
               must: [
+                {
+                  range: {
+                    [index === "twits"
+                      ? "data.timestamp"
+                      : "comment.timestamp"]: {
+                      gte: startDate.getTime(),
+                    },
+                  },
+                },
                 {
                   exists: {
                     field:
@@ -1003,8 +1013,7 @@ exports.getRandomItem = async (forceHate = false) => {
                         ? "data.prediction"
                         : "comment.prediction",
                   },
-                }, // Add condition for 'yourField' not being null
-                { function_score: { random_score: {} } },
+                },
               ],
             },
           },
@@ -1016,8 +1025,18 @@ exports.getRandomItem = async (forceHate = false) => {
         body: {
           size: 10000,
           query: {
-            function_score: {
-              random_score: {},
+            bool: {
+              must: [
+                {
+                  range: {
+                    [index === "twits"
+                      ? "data.timestamp"
+                      : "comment.timestamp"]: {
+                      gte: startDate.getTime(),
+                    },
+                  },
+                },
+              ],
             },
           },
         },
