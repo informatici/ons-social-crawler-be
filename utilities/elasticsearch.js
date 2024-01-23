@@ -245,22 +245,14 @@ exports.getTwits = async (
     };
 
     if (search) {
-      filter.body = {
-        query: {
-          bool: {
-            must: [
-              {
-                wildcard: {
-                  "data.text": {
-                    value: `*${search}*`,
-                    case_insensitive: true,
-                  },
-                },
-              },
-            ],
+      filter.body.query.bool.must.push({
+        wildcard: {
+          "data.text": {
+            value: `*${search}*`,
+            case_insensitive: true,
           },
         },
-      };
+      });
     }
 
     if (prediction == 2) {
@@ -565,22 +557,14 @@ exports.getYouTubeComments = async (
     };
 
     if (search) {
-      filter.body = {
-        query: {
-          bool: {
-            must: [
-              {
-                wildcard: {
-                  "comment.textDisplay": {
-                    value: `*${search}*`,
-                    case_insensitive: true,
-                  },
-                },
-              },
-            ],
+      filter.body.query.bool.must.push({
+        wildcard: {
+          "comment.textDisplay": {
+            value: `*${search}*`,
+            case_insensitive: true,
           },
         },
-      };
+      });
     }
 
     if (prediction == 2) {
@@ -849,22 +833,14 @@ exports.getTwitchComments = async (
     };
 
     if (search) {
-      filter.body = {
-        query: {
-          bool: {
-            must: [
-              {
-                wildcard: {
-                  "comment.textDisplay": {
-                    value: `*${search}*`,
-                    case_insensitive: true,
-                  },
-                },
-              },
-            ],
+      filter.body.query.bool.must.push({
+        wildcard: {
+          "comment.textDisplay": {
+            value: `*${search}*`,
+            case_insensitive: true,
           },
         },
-      };
+      });
     }
 
     if (prediction == 2) {
