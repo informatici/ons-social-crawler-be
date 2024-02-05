@@ -5,8 +5,9 @@ const twitchControllers = require("../controllers/twitchControllers");
 const router = express.Router();
 
 router.get(
-  "/streams/:streamId",
+  "/streams/:streamId/:id",
   param("streamId").notEmpty(),
+  param("id").notEmpty(),
   query("size").notEmpty(),
   query("page").notEmpty(),
   query("search"),

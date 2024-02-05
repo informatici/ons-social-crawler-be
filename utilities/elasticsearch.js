@@ -347,6 +347,7 @@ exports.indexYouTubeVideo = async (data) => {
 
 exports.getYouTubeVideos = async (
   videoId,
+  id,
   size = 10,
   page = 1,
   search = "",
@@ -449,6 +450,29 @@ exports.getYouTubeVideos = async (
       result.comments = comments?.hits?.hits || [];
       result.totalComments = comments?.hits?.total?.value || 0;
       //end::Comments
+
+      const selectedComment = await elasticsearch.search({
+        index: "youtubecomments",
+        size: 1,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    "comment.id": id,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+
+      result.selectedComment = selectedComment?.hits?.hits || [];
+      if (result.selectedComment.length > 0)
+        result.selectedComment =
+          result.selectedComment[0]?._source?.comment || null;
     }
 
     return result;
@@ -692,6 +716,7 @@ exports.indexTwitchComment = async (data) => {
 
 exports.getTwitchStream = async (
   streamId,
+  id,
   size = 10,
   page = 1,
   search = "",
@@ -795,6 +820,29 @@ exports.getTwitchStream = async (
       result.comments = comments?.hits?.hits || [];
       result.totalComments = comments?.hits?.total?.value || 0;
       //end::Comments
+
+      const selectedComment = await elasticsearch.search({
+        index: "twitchcomments",
+        size: 1,
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    "comment.id": id,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+
+      result.selectedComment = selectedComment?.hits?.hits || [];
+      if (result.selectedComment.length > 0)
+        result.selectedComment =
+          result.selectedComment[0]?._source?.comment || null;
 
       result.video = await twitch.getVideo(result.stream);
     }
@@ -1032,8 +1080,9 @@ exports.updateHowItWorks = async (text) => {
   }
 };
 
-exports.getRandomItem = async (forceHate = false) => {
+exports.getRandomItem = async (type) => {
   try {
+    const forceHate = type > 1;
     const indexArray = ["youtubecomments", "twitchcomments", "twits"];
     const index = indexArray[Math.floor(Math.random() * indexArray.length)];
     const randomBoolean = Math.random() < 0.5;
@@ -1041,7 +1090,7 @@ exports.getRandomItem = async (forceHate = false) => {
     const startDate = new Date("2024-01-02T00:00:00");
 
     if (randomBoolean || forceHate) {
-      body = await elasticsearch.search({
+      const filter = {
         index,
         body: {
           size: 10000,
@@ -1069,7 +1118,19 @@ exports.getRandomItem = async (forceHate = false) => {
             },
           },
         },
-      });
+      };
+
+      if (type === 3) {
+        filter.body.query.bool.must.push({
+          term: {
+            [index === "twits"
+              ? "data.prediction.prediction_dict"
+              : "comment.prediction.prediction_dict"]: 1,
+          },
+        });
+      }
+
+      body = await elasticsearch.search(filter);
     } else {
       body = await elasticsearch.search({
         index,

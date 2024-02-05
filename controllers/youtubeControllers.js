@@ -10,6 +10,7 @@ const videosIndexId = async (req, res, next) => {
   try {
     const videos = await elasticsearch.getYouTubeVideos(
       req.params.videoId,
+      req.params.id,
       req.query.size,
       req.query.page,
       req.query.search,

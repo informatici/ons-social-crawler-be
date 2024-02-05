@@ -5,8 +5,9 @@ const youtubeControllers = require("../controllers/youtubeControllers");
 const router = express.Router();
 
 router.get(
-  "/videos/:videoId",
+  "/videos/:videoId/:id",
   param("videoId").notEmpty(),
+  param("id").notEmpty(),
   query("size").notEmpty(),
   query("page").notEmpty(),
   query("search"),

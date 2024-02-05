@@ -10,6 +10,7 @@ const streamsIndexId = async (req, res, next) => {
   try {
     const stream = await elasticsearch.getTwitchStream(
       req.params.streamId,
+      req.params.id,
       req.query.size,
       req.query.page,
       req.query.search,
