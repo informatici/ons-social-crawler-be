@@ -146,10 +146,12 @@ exports.indexTwit = async (data, countTweets) => {
       .trim();
     data.prediction = null;
     data.response = null;
+    data.responseObj = null;
     data.timestamp = Date.now();
     data.createdAt = data.created_at;
     data.referenced_tweets = data?.referenced_tweets || [];
     data.edit_history_tweet_ids = data?.edit_history_tweet_ids || [];
+    data.version = 0;
 
     const checkTweet = await elasticsearch.search({
       index: "twits",
@@ -180,6 +182,7 @@ exports.indexTwit = async (data, countTweets) => {
     );
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
+    data.version = chatBotPrediction?.data?.response[0]?.version || 0;
 
     if (isHate === 1) {
       data.prediction = chatBotPrediction.data.response[0];
@@ -190,6 +193,7 @@ exports.indexTwit = async (data, countTweets) => {
       });
 
       data.response = chatBotResponse.data?.response[0]?.answer || null;
+      data.responseObj = chatBotResponse.data?.response[0] || null;
     }
 
     await elasticsearch.index({
@@ -493,8 +497,10 @@ exports.indexYouTubeComment = async (data, countComments) => {
         videoId: data?.snippet?.videoId || "",
         prediction: null,
         response: null,
+        responseObj: null,
         timestamp: Date.now(),
         replies: data?.replies || [],
+        version: 0,
       };
 
       const checkComment = await elasticsearch.search({
@@ -526,6 +532,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
       );
 
       const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
+      comment.version = chatBotPrediction?.data?.response[0]?.version || 0;
 
       if (isHate === 1) {
         comment.prediction = chatBotPrediction.data.response[0];
@@ -536,6 +543,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
         });
 
         comment.response = chatBotResponse.data?.response[0]?.answer || null;
+        comment.responseObj = chatBotResponse.data?.response[0] || null;
       }
 
       await elasticsearch.index({
@@ -679,7 +687,9 @@ exports.indexTwitchComment = async (data) => {
       streamId: data?.streamId || "",
       prediction: null,
       response: null,
+      responseObj: null,
       timestamp: Date.now(),
+      version: 0,
     };
 
     const chatBotPrediction = await axios.post(
@@ -691,6 +701,7 @@ exports.indexTwitchComment = async (data) => {
     );
 
     const isHate = chatBotPrediction?.data?.response[0]?.prediction || 0;
+    comment.version = chatBotPrediction?.data?.response[0]?.version || 0;
 
     if (isHate === 1) {
       comment.prediction = chatBotPrediction.data.response[0];
@@ -701,6 +712,7 @@ exports.indexTwitchComment = async (data) => {
       });
 
       comment.response = chatBotResponse.data?.response[0]?.answer || null;
+      comment.responseObj = chatBotResponse.data?.response[0] || null;
     }
 
     await elasticsearch.index({
