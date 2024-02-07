@@ -38,21 +38,25 @@ const saveVideos = async (pageToken = "") => {
 
       const videoId = v?.id || "";
       if (videoId !== "") {
-        const responseComments = await get(
-          "commentThreads",
-          `videoId=${videoId}&part=snippet,replies&maxResults=100`
-        );
-
-        const comments = responseComments?.data?.items || [];
-
-        for (c of comments) {
-          countComments = await elasticsearch.indexYouTubeComment(
-            c,
-            countComments
+        try {
+          const responseComments = await get(
+            "commentThreads",
+            `videoId=${videoId}&part=snippet,replies&maxResults=100`
           );
-          if (countComments >= youTubeLength) {
-            return;
+
+          const comments = responseComments?.data?.items || [];
+
+          for (c of comments) {
+            countComments = await elasticsearch.indexYouTubeComment(
+              c,
+              countComments
+            );
+            if (countComments >= youTubeLength) {
+              return;
+            }
           }
+        } catch (e) {
+          console.log("Error test", e);
         }
       }
     }
