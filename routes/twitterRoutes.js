@@ -10,6 +10,7 @@ router.get(
   query("page").notEmpty(),
   query("search"),
   query("prediction"),
+  query("category"),
   query("sortLabel"),
   query("sortOrder"),
   query("dateFrom").notEmpty(),
