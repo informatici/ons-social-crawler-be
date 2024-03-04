@@ -229,7 +229,8 @@ exports.getTwits = async (
   sortLabel = "createdAt",
   sortOrder = "desc",
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  category = "all"
 ) => {
   try {
     const from = (page - 1) * size;
@@ -277,6 +278,14 @@ exports.getTwits = async (
               field: "data.prediction",
             },
           },
+        },
+      });
+    }
+
+    if (category != "all") {
+      filter.body.query.bool.must.push({
+        match: {
+          [`data.prediction.dimensions.${category}`]: 1,
         },
       });
     }
@@ -359,7 +368,8 @@ exports.getYouTubeVideos = async (
   sortLabel = "publishedAt",
   sortOrder = "desc",
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  category = "all"
 ) => {
   try {
     const result = {
@@ -433,6 +443,14 @@ exports.getYouTubeVideos = async (
                 field: "comment.prediction",
               },
             },
+          },
+        });
+      }
+
+      if (category != "all") {
+        filter.body.query.bool.must.push({
+          match: {
+            [`comment.prediction.dimensions.${category}`]: 1,
           },
         });
       }
@@ -569,7 +587,8 @@ exports.getYouTubeComments = async (
   sortLabel = "publishedAt",
   sortOrder = "desc",
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  category = "all"
 ) => {
   try {
     const from = (page - 1) * size;
@@ -617,6 +636,14 @@ exports.getYouTubeComments = async (
               field: "comment.prediction",
             },
           },
+        },
+      });
+    }
+
+    if (category != "all") {
+      filter.body.query.bool.must.push({
+        match: {
+          [`comment.prediction.dimensions.${category}`]: 1,
         },
       });
     }
@@ -736,7 +763,8 @@ exports.getTwitchStream = async (
   sortLabel = "publishedAt",
   sortOrder = "desc",
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  category = "all"
 ) => {
   try {
     const result = {
@@ -815,6 +843,14 @@ exports.getTwitchStream = async (
         });
       }
 
+      if (category != "all") {
+        filter.body.query.bool.must.push({
+          match: {
+            [`comment.prediction.dimensions.${category}`]: 1,
+          },
+        });
+      }
+
       if (dateFrom && dateTo) {
         filter.body.query.bool.filter.push({
           range: {
@@ -873,7 +909,8 @@ exports.getTwitchComments = async (
   sortLabel = "publishedAt",
   sortOrder = "desc",
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  category = "all"
 ) => {
   try {
     const from = (page - 1) * size;
@@ -921,6 +958,14 @@ exports.getTwitchComments = async (
               field: "comment.prediction",
             },
           },
+        },
+      });
+    }
+
+    if (category != "all") {
+      filter.body.query.bool.must.push({
+        match: {
+          [`comment.prediction.dimensions.${category}`]: 1,
         },
       });
     }

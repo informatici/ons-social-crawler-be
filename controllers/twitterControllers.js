@@ -16,7 +16,8 @@ const twitsIndex = async (req, res, next) => {
       req.query.sortLabel || "createdAt",
       req.query.sortOrder || "desc",
       Date.parse(req.query.dateFrom),
-      Date.parse(req.query.dateTo)
+      Date.parse(req.query.dateTo),
+      req.query.category
     );
     res.status(200).json(twits);
   } catch (err) {

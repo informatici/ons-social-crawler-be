@@ -18,7 +18,8 @@ const streamsIndexId = async (req, res, next) => {
       req.query.sortLabel || "publishedAt",
       req.query.sortOrder || "desc",
       Date.parse(req.query.dateFrom),
-      Date.parse(req.query.dateTo)
+      Date.parse(req.query.dateTo),
+      req.query.category
     );
     res.status(200).json(stream);
   } catch (err) {
@@ -41,7 +42,8 @@ const commentsIndex = async (req, res, next) => {
       req.query.sortLabel || "publishedAt",
       req.query.sortOrder || "desc",
       Date.parse(req.query.dateFrom),
-      Date.parse(req.query.dateTo)
+      Date.parse(req.query.dateTo),
+      req.query.category
     );
     res.status(200).json(comments);
   } catch (err) {
