@@ -11,7 +11,7 @@ const create = async (req, res, next) => {
   try {
     let answers = [];
     const comment = await elasticsearch.getRandomItem(req.body.type);
-    console.log(comment);
+    //console.log(comment);
 
     if (req.body.type === 2 && comment.prediction) {
       answers = await elasticsearch.getAnswers();
