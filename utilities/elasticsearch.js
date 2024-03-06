@@ -1105,7 +1105,7 @@ exports.getRandomItem = async (type) => {
       const filter = {
         index,
         body: {
-          size: 10000,
+          size: 100,
           query: {
             bool: {
               must: [
@@ -1147,7 +1147,7 @@ exports.getRandomItem = async (type) => {
       body = await elasticsearch.search({
         index,
         body: {
-          size: 10000,
+          size: 100,
           query: {
             bool: {
               must: [
