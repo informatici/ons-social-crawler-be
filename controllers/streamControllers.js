@@ -31,7 +31,7 @@ const startTwitter = async (req, res, next) => {
     try {
       await streamStatus.setTwitterStreamStatus(true);
       await twitter.getTweets();
-      res.status(200).json({ msg: "Tweets  had been saved" });
+      res.status(200).json({ msg: "Tweets had been saved" });
     } catch (err) {
       next(err);
     } finally {
