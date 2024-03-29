@@ -53,7 +53,7 @@ const create = async (req, res, next) => {
       type: req.body.type,
       description: comment.textDisplay || comment.text,
       hasHate: comment.prediction ? true : false,
-      grade: comment.prediction?.prediction_dict,
+      grade: comment.prediction?.score,
       similarity: comment.prediction?.radiuses_nnr,
       dimensions: comment.prediction?.dimensions,
       tokens: comment.prediction?.tokens,
