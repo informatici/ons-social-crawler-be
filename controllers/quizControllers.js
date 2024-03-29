@@ -58,6 +58,7 @@ const create = async (req, res, next) => {
       dimensions: comment.prediction?.dimensions,
       tokens: comment.prediction?.tokens,
       answer: comment.response,
+      answers,
     };
 
     res.status(200).json(quiz);
