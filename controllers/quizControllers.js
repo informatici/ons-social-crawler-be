@@ -53,8 +53,11 @@ const create = async (req, res, next) => {
       type: req.body.type,
       description: comment.textDisplay || comment.text,
       hasHate: comment.prediction ? true : false,
-      dimensions: comment?.prediction?.dimensions || null,
-      answers,
+      grade: comment.prediction?.prediction_dict,
+      similarity: comment.prediction?.radiuses_nnr,
+      dimensions: comment.prediction?.dimensions,
+      tokens: comment.prediction?.tokens,
+      answer: comment.response,
     };
 
     res.status(200).json(quiz);
