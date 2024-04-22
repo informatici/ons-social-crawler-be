@@ -60,12 +60,12 @@ exports.resetStreamStatus = async () => {
     twitter: false,
     twitch: false,
     youTube: false,
-    twitterFlag: false,
-    twitchFlag: false,
-    youTubeFlag: false,
-    twitterLength: 250,
-    twitchLength: 250,
-    youTubeLength: 250,
+    twitterFlag: true,
+    twitchFlag: true,
+    youTubeFlag: true,
+    twitterLength: 300,
+    twitchLength: 300,
+    youTubeLength: 300,
   };
 
   await elasticsearch.updateStreamStatus(streamStatus);

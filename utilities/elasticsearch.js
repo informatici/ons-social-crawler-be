@@ -5,6 +5,7 @@ const uuid = require("uuid");
 const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
+const bcrypt = require("bcrypt");
 
 // const elasticsearch = new Client({
 //   cloud: {
@@ -141,7 +142,7 @@ exports.getLastTwitId = async () => {
 exports.indexTwit = async (data, countTweets) => {
   try {
     data.text = data.text
-      .replace(/\B@\w*[a-zA-Z:]+\w*/g, "")
+      .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
       .replace(/(^RT)/g, "")
       .trim();
     data.prediction = null;
@@ -152,6 +153,26 @@ exports.indexTwit = async (data, countTweets) => {
     data.referenced_tweets = data?.referenced_tweets || [];
     data.edit_history_tweet_ids = data?.edit_history_tweet_ids || [];
     data.version = 0;
+    data.id = uuid.v4();
+    data.author_id = await bcrypt.hash(data.author_id, 10);
+
+    if (data.referenced_tweets.length > 0) {
+      for (let i = 0; i < data.referenced_tweets.length; i++) {
+        data.referenced_tweets[i].id = await bcrypt.hash(
+          data.referenced_tweets[i].id,
+          10
+        );
+      }
+    }
+
+    if (data.edit_history_tweet_ids.length > 0) {
+      for (let i = 0; i < data.edit_history_tweet_ids.length; i++) {
+        data.edit_history_tweet_ids[i] = await bcrypt.hash(
+          data.edit_history_tweet_ids[i],
+          10
+        );
+      }
+    }
 
     const checkTweet = await elasticsearch.search({
       index: "twits",
@@ -503,15 +524,44 @@ exports.getYouTubeVideos = async (
   }
 };
 
+exports.getYouTubeComment = async (id) => {
+  try {
+    const result = {
+      video: {},
+      comments: [],
+      totalComments: 0,
+    };
+    const res = await elasticsearch.search({
+      index: "youtubecomments",
+      size: 1,
+      query: {
+        match: {
+          "comment.id": id,
+        },
+      },
+    });
+
+    return res;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.indexYouTubeComment = async (data, countComments) => {
   try {
     const isPublic = data?.snippet?.isPublic || false;
 
     if (isPublic) {
+      const textDisplay = (
+        data?.snippet?.topLevelComment?.snippet?.textDisplay || ""
+      )
+        .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+        .replace(/(^RT)/g, "")
+        .trim();
       const comment = {
-        id: data.id || "",
+        id: uuid.v4(),
         publishedAt: data?.snippet?.topLevelComment?.snippet?.publishedAt || "",
-        textDisplay: data?.snippet?.topLevelComment?.snippet?.textDisplay || "",
+        textDisplay,
         videoId: data?.snippet?.videoId || "",
         prediction: null,
         response: null,
@@ -706,10 +756,14 @@ exports.indexTwitchStream = async (stream) => {
 
 exports.indexTwitchComment = async (data) => {
   try {
+    const textDisplay = (data?.message || "")
+      .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+      .replace(/(^RT)/g, "")
+      .trim();
     const comment = {
       id: uuid.v4(),
       publishedAt: moment.utc().toISOString(),
-      textDisplay: data?.message || "",
+      textDisplay,
       channelName: data?.channelName || "",
       streamId: data?.streamId || "",
       prediction: null,
