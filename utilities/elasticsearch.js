@@ -5,7 +5,8 @@ const uuid = require("uuid");
 const moment = require("moment");
 const { Client } = require("@elastic/elasticsearch");
 const fs = require("fs");
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
+const sha256 = require("crypto-js/sha256");
 
 // const elasticsearch = new Client({
 //   cloud: {
@@ -153,24 +154,22 @@ exports.indexTwit = async (data, countTweets) => {
     data.referenced_tweets = data?.referenced_tweets || [];
     data.edit_history_tweet_ids = data?.edit_history_tweet_ids || [];
     data.version = 0;
-    data.id = uuid.v4();
-    data.author_id = await bcrypt.hash(data.author_id, 10);
+    data.id = sha256(data.id).toString();
+    data.author_id = sha256(data.author_id).toString();
 
     if (data.referenced_tweets.length > 0) {
       for (let i = 0; i < data.referenced_tweets.length; i++) {
-        data.referenced_tweets[i].id = await bcrypt.hash(
-          data.referenced_tweets[i].id,
-          10
-        );
+        data.referenced_tweets[i].id = sha256(
+          data.referenced_tweets[i].id
+        ).toString();
       }
     }
 
     if (data.edit_history_tweet_ids.length > 0) {
       for (let i = 0; i < data.edit_history_tweet_ids.length; i++) {
-        data.edit_history_tweet_ids[i] = await bcrypt.hash(
-          data.edit_history_tweet_ids[i],
-          10
-        );
+        data.edit_history_tweet_ids[i] = sha256(
+          data.edit_history_tweet_ids[i]
+        ).toString();
       }
     }
 
@@ -559,7 +558,7 @@ exports.indexYouTubeComment = async (data, countComments) => {
         .replace(/(^RT)/g, "")
         .trim();
       const comment = {
-        id: uuid.v4(),
+        id: sha256(data.id).toString(),
         publishedAt: data?.snippet?.topLevelComment?.snippet?.publishedAt || "",
         textDisplay,
         videoId: data?.snippet?.videoId || "",
