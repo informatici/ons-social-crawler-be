@@ -29,25 +29,25 @@ const get = (slug) => {
 
 const saveTweets = async (pageToken = "") => {
   let responseTweets = "";
-  if (!lastId) {
-    responseTweets = await get(
-      `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&query=(sport OR calcio) lang:it -is:retweet -is:quote`
-    );
-  } else if (pageToken) {
-    responseTweets = await get(
-      `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet -is:quote&pagination_token=${pageToken}`
-    );
-  } else {
-    try {
-      responseTweets = await get(
-        `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet -is:quote`
-      );
-    } catch {
-      //Se lastId troppo vecchio
+  try {
+    if (!lastId) {
       responseTweets = await get(
         `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&query=(sport OR calcio) lang:it -is:retweet -is:quote`
       );
+    } else if (pageToken) {
+      responseTweets = await get(
+        `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet -is:quote&pagination_token=${pageToken}`
+      );
+    } else {
+      responseTweets = await get(
+        `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&since_id=${lastId}&query=(sport OR calcio) lang:it -is:retweet -is:quote`
+      );
     }
+  } catch {
+    //Se lastId troppo vecchio o errore generico su lastId
+    responseTweets = await get(
+      `tweets/search/recent?expansions=author_id,referenced_tweets.id&tweet.fields=lang,created_at,note_tweet&query=(sport OR calcio) lang:it -is:retweet -is:quote`
+    );
   }
 
   const tweets = responseTweets?.data?.data || [];
