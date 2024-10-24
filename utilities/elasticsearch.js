@@ -551,12 +551,20 @@ exports.indexYouTubeComment = async (data, countComments) => {
     const isPublic = data?.snippet?.isPublic || false;
 
     if (isPublic) {
-      const textDisplay = (
-        data?.snippet?.topLevelComment?.snippet?.textDisplay || ""
+      // const textDisplay = (
+      //   data?.snippet?.topLevelComment?.snippet?.textDisplay || ""
+      // )
+      //   .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+      //   .replace(/(^RT)/g, "")
+      //   .trim();
+
+      const textDisplay = replaceAndHashDynamic(
+        data?.snippet?.topLevelComment?.snippet?.textDisplay || "",
+        /\B@\w*[a-zA-Z:]+\w*/g
       )
-        .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
         .replace(/(^RT)/g, "")
         .trim();
+
       const comment = {
         id: sha256(data.id).toString(),
         publishedAt: data?.snippet?.topLevelComment?.snippet?.publishedAt || "",
@@ -755,10 +763,18 @@ exports.indexTwitchStream = async (stream) => {
 
 exports.indexTwitchComment = async (data) => {
   try {
-    const textDisplay = (data?.message || "")
-      .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+    // const textDisplay = (data?.message || "")
+    //   .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+    //   .replace(/(^RT)/g, "")
+    //   .trim();
+
+    const textDisplay = replaceAndHashDynamic(
+      data?.message || "",
+      /\B@\w*[a-zA-Z:]+\w*/g
+    )
       .replace(/(^RT)/g, "")
       .trim();
+
     const comment = {
       id: uuid.v4(),
       publishedAt: moment.utc().toISOString(),
@@ -1282,4 +1298,24 @@ exports.getAnswers = async (forceHate = false) => {
   } catch (err) {
     throw err;
   }
+};
+
+replaceAndHashDynamic = (originalStr, regexPattern) => {
+  let replacedStr = originalStr;
+
+  const matches = originalStr.match(new RegExp(regexPattern, "g"));
+
+  if (!matches) {
+    return originalStr;
+  }
+
+  matches.forEach((match) => {
+    const hash = SHA256(match).toString();
+    replacedStr = replacedStr.replace(
+      new RegExp(match, "g"),
+      `###REPLACED_USER-${hash}###`
+    );
+  });
+
+  return replacedStr;
 };
