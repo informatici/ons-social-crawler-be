@@ -1308,3 +1308,254 @@ exports.getAnswers = async (forceHate = false) => {
     throw err;
   }
 };
+
+// exports.alignAllRecords = async () => {
+//   const results = [];
+//   let lastSortValue = null;
+//   let hasMore = true;
+
+//   while (hasMore) {
+//     const response = await elasticsearch.search({
+//       index: "twitchcomments",
+//       size: 1000,
+//       body: {
+//         sort: [{ "comment.publishedAt": "asc" }],
+//         search_after: lastSortValue ? [lastSortValue] : undefined,
+//       },
+//     });
+
+//     const hits = response?.hits?.hits || [];
+
+//     if (hits.length > 0) {
+//       results.push(...hits);
+
+//       const bulkOperations = hits.flatMap((hit) => {
+//         console.log(hit._source.comment.textDisplay);
+
+//         const newValue = hit._source.comment.textDisplay
+//           .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+//           .replace(/(^RT)/g, "")
+//           .trim();
+
+//         return [
+//           { update: { _id: hit._id, _index: "twitchcomments" } },
+//           {
+//             doc: {
+//               comment: { textDisplay: newValue },
+//             },
+//           },
+//         ];
+//       });
+
+//       if (bulkOperations.length > 0) {
+//         const bulkResponse = await elasticsearch.bulk({
+//           body: bulkOperations,
+//         });
+
+//         if (bulkResponse?.errors) {
+//           console.error("Error updating some documents:", bulkResponse.items);
+//         } else {
+//           console.log("Bulk update successful for this batch.");
+//         }
+//       }
+
+//       lastSortValue = hits[hits.length - 1].sort[0]; // Ultimo valore per paginare
+//     } else {
+//       hasMore = false; // Fine dei risultati
+//     }
+
+//     console.log("count total:", results.length);
+//   }
+// };
+
+// exports.alignAllRecords = async () => {
+//   const results = [];
+//   let lastSortValue = null;
+//   let hasMore = true;
+
+//   while (hasMore) {
+//     const response = await elasticsearch.search({
+//       index: "youtubecomments",
+//       size: 1000,
+//       body: {
+//         sort: [{ "comment.publishedAt": "asc" }],
+//         search_after: lastSortValue ? [lastSortValue] : undefined,
+//       },
+//     });
+
+//     const hits = response?.hits?.hits || [];
+
+//     if (hits.length > 0) {
+//       results.push(...hits);
+
+//       const bulkOperations = hits.flatMap((hit) => {
+//         const newValue = hit._source.comment.textDisplay
+//           .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+//           .replace(/(^RT)/g, "")
+//           .trim();
+
+//         const hashedId = sha256(hit._source.comment.id).toString();
+//         const newReplies = hit._source.comment?.replies || [];
+
+//         if (newReplies?.comments && newReplies?.comments.length > 0) {
+//           for (let i = 0; i < newReplies.comments.length; i++) {
+//             const replyComment = newReplies.comments[i];
+//             newReplies.comments[i].id = sha256(replyComment.id).toString();
+
+//             if (replyComment?.snippet) {
+//               const snippet = replyComment?.snippet;
+
+//               newReplies.comments[i].snippet.textDisplay = (
+//                 snippet.textDisplay || ""
+//               )
+//                 .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+//                 .replace(/(^RT)/g, "")
+//                 .trim();
+
+//               newReplies.comments[i].snippet.textOriginal = (
+//                 snippet.textOriginal || ""
+//               )
+//                 .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+//                 .replace(/(^RT)/g, "")
+//                 .trim();
+
+//               newReplies.comments[i].snippet.parentId = hashedId;
+
+//               delete newReplies.comments[i].snippet.authorDisplayName;
+//               delete newReplies.comments[i].snippet.authorProfileImageUrl;
+//               delete newReplies.comments[i].snippet.authorChannelUrl;
+//               delete newReplies.comments[i].snippet.authorChannelId;
+//             }
+//           }
+
+//           console.log("newReplies", newReplies.comments);
+
+//           return [
+//             { update: { _id: hit._id, _index: "youtubecomments" } },
+//             {
+//               doc: {
+//                 comment: {
+//                   textDisplay: newValue,
+//                   id: hashedId,
+//                   replies: newReplies,
+//                 },
+//               },
+//             },
+//           ];
+//         } else {
+//           return [
+//             { update: { _id: hit._id, _index: "youtubecomments" } },
+//             {
+//               doc: {
+//                 comment: { textDisplay: newValue, id: hashedId },
+//               },
+//             },
+//           ];
+//         }
+//       });
+
+//       if (bulkOperations.length > 0) {
+//         const bulkResponse = await elasticsearch.bulk({
+//           body: bulkOperations,
+//         });
+
+//         if (bulkResponse?.errors) {
+//           console.error("Error updating some documents:", bulkResponse.items);
+//         } else {
+//           console.log("Bulk update successful for this batch.");
+//         }
+//       }
+
+//       lastSortValue = hits[hits.length - 1].sort[0]; // Ultimo valore per paginare
+//     } else {
+//       hasMore = false; // Fine dei risultati
+//     }
+
+//     console.log("count total:", results.length);
+//   }
+// };
+
+// exports.alignAllRecords = async () => {
+//   const results = [];
+//   let lastSortValue = null;
+//   let hasMore = true;
+
+//   while (hasMore) {
+//     const response = await elasticsearch.search({
+//       index: "twits",
+//       size: 1000,
+//       body: {
+//         sort: [{ "data.createdAt": "asc" }],
+//         search_after: lastSortValue ? [lastSortValue] : undefined,
+//       },
+//     });
+
+//     const hits = response?.hits?.hits || [];
+
+//     if (hits.length > 0) {
+//       results.push(...hits);
+
+//       const bulkOperations = hits.flatMap((hit) => {
+//         const newValue = hit._source.data.text
+//           .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+//           .replace(/(^RT)/g, "")
+//           .trim();
+
+//         const hashedId = sha256(hit._source.data.id).toString();
+
+//         const referenced_tweets = hit._source.data.referenced_tweets || [];
+
+//         if (referenced_tweets.length > 0) {
+//           for (let i = 0; i < referenced_tweets.length; i++) {
+//             referenced_tweets[i].id = sha256(
+//               referenced_tweets[i].id
+//             ).toString();
+//           }
+//         }
+
+//         const edit_history_tweet_ids =
+//           hit._source.data.edit_history_tweet_ids || [];
+
+//         if (edit_history_tweet_ids.length > 0) {
+//           for (let i = 0; i < edit_history_tweet_ids.length; i++) {
+//             edit_history_tweet_ids[i] = sha256(
+//               edit_history_tweet_ids[i]
+//             ).toString();
+//           }
+//         }
+
+//         return [
+//           { update: { _id: hit._id, _index: "twits" } },
+//           {
+//             doc: {
+//               data: {
+//                 id: hashedId,
+//                 text: newValue,
+//                 referenced_tweets,
+//                 edit_history_tweet_ids,
+//               },
+//             },
+//           },
+//         ];
+//       });
+
+//       if (bulkOperations.length > 0) {
+//         const bulkResponse = await elasticsearch.bulk({
+//           body: bulkOperations,
+//         });
+
+//         if (bulkResponse?.errors) {
+//           console.error("Error updating some documents:", bulkResponse.items);
+//         } else {
+//           console.log("Bulk update successful for this batch.");
+//         }
+//       }
+
+//       lastSortValue = hits[hits.length - 1].sort[0]; // Ultimo valore per paginare
+//     } else {
+//       hasMore = false; // Fine dei risultati
+//     }
+
+//     console.log("count total:", results.length);
+//   }
+// };

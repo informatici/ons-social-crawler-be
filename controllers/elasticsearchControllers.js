@@ -76,11 +76,20 @@ const search = async (req, res, next) => {
 
     result = await elasticsearch.search(
       Date.parse(req.query.dateFrom),
-      Date.parse(req.query.dateTo),
+      Date.parse(req.query.dateTo)
     );
     //console.log('inside elasticsearchControllers, result : %O', result)
     //console.log('inside elasticsearchControllers, result size : ' + result.hits.length)
     res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const alignAllRecords = async (req, res, next) => {
+  try {
+    await elasticsearch.alignAllRecords();
+    res.status(200).json({ status: "Done" });
   } catch (err) {
     next(err);
   }
@@ -92,4 +101,5 @@ module.exports = {
   clean,
   query,
   search,
+  alignAllRecords,
 };

@@ -7,8 +7,14 @@ const router = express.Router();
 router.get("/info", isAuthorized(["Admin"]), elasticsearchControllers.info);
 router.get("/config", isAuthorized(["Admin"]), elasticsearchControllers.config);
 router.get("/clean", isAuthorized(["Admin"]), elasticsearchControllers.clean);
+router.get(
+  "/align-all-records",
+  isAuthorized(["Admin"]),
+  elasticsearchControllers.alignAllRecords
+);
 
-router.get("/query",
+router.get(
+  "/query",
   isAuthorized(["Admin", "Teacher", "Trainer"]),
   query("dateFrom").notEmpty(),
   query("dateTo").notEmpty(),
