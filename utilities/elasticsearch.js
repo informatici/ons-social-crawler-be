@@ -570,6 +570,38 @@ exports.indexYouTubeComment = async (data, countComments) => {
         version: 0,
       };
 
+      if (comment.replies?.comments && comment.replies?.comments.length > 0) {
+        for (let i = 0; i < comment.replies.comments.length; i++) {
+          const replyComment = comment.replies.comments[i];
+          comment.replies.comments[i].id = sha256(replyComment.id).toString();
+
+          if (replyComment?.snippet) {
+            const snippet = replyComment?.snippet;
+
+            comment.replies.comments[i].snippet.textDisplay = (
+              snippet.textDisplay || ""
+            )
+              .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+              .replace(/(^RT)/g, "")
+              .trim();
+
+            comment.replies.comments[i].snippet.textOriginal = (
+              snippet.textOriginal || ""
+            )
+              .replace(/\B@\w*[a-zA-Z:]+\w*/g, "###REPLACED_USER_ONS###")
+              .replace(/(^RT)/g, "")
+              .trim();
+
+            comment.replies.comments[i].snippet.parentId = comment.id;
+
+            delete comment.replies.comments[i].snippet.authorDisplayName;
+            delete comment.replies.comments[i].snippet.authorProfileImageUrl;
+            delete comment.replies.comments[i].snippet.authorChannelUrl;
+            delete comment.replies.comments[i].snippet.authorChannelId;
+          }
+        }
+      }
+
       const checkComment = await elasticsearch.search({
         index: "youtubecomments",
         query: {
@@ -1080,7 +1112,6 @@ exports.updateStreamStatus = async (updatedData) => {
 };
 
 exports.search = async (dateFrom, dateTo) => {
-  //console.log('inside elasticsearch.js, search : ' + dateFrom + ' ' + dateTo)
   try {
     let filter = {
       index: ["youtubecomments", "twitchcomments", "twits"],
@@ -1124,9 +1155,7 @@ exports.search = async (dateFrom, dateTo) => {
     };
 
     let i = 1;
-    // first request: 'POST /index/type/_search?scroll=1m'
     streamStatus = await elasticsearch.search(filter);
-    //console.log('inside elasticsearch.js, streamStatus %d : %O', i, streamStatus) //first response
     result = streamStatus?.hits || [];
     scroll_id = {
       scroll_id: streamStatus._scroll_id,
@@ -1138,17 +1167,13 @@ exports.search = async (dateFrom, dateTo) => {
     // subsequent requests 'POST /_search/scroll')
     while (more_to_read > 0) {
       streamStatus = await elasticsearch.scroll(scroll_id);
-      //console.log('inside elasticsearch.js, streamStatus %d  : %O', i, streamStatus) //subsequent responses
       result.hits = result.hits.concat(streamStatus?.hits.hits);
       more_to_read -= streamStatus?.hits.hits.length;
       if (more_to_read < 0) {
         more_to_read = 0;
       }
-      //console.log('more to read : %d', more_to_read)
       i++;
     }
-    //console.log('inside elasticsearch.js, result : %O', result)
-    //console.log('inside elasticsearch.js, result size : ' + result.hits.length)
     return result;
   } catch (err) {
     throw err;
